@@ -6,7 +6,6 @@
 #include <cmath>
 
 typedef unsigned char uchar;
-typedef unsigned int  uint;
 
 struct color {uchar r; uchar g; uchar b;};
 struct vec3f {float x; float y; float z;};
@@ -27,15 +26,17 @@ std::vector<std::string> split_whitespaces(std::string str)
 class Mesh {
 public:
     Mesh() {}
-    Mesh(std::vector<float> vertices, std::vector<uint> triangles)
-        : m_vertices(vertices), m_triangles(triangles) {}
+    Mesh(std::vector<float> vertices, std::vector<int> faces)
+        : m_vertices(vertices), m_faces(faces) {}
 
     void set_vertices(std::vector<float> vertices)  {m_vertices = vertices;}
-    void set_triangles(std::vector<uint> triangles) {m_triangles = triangles;}
+    void set_normals(std::vector<float> normals)  {m_normals = normals;}
+    void set_faces(std::vector<int> faces) {m_faces = faces;}
 
 private:
     std::vector<float> m_vertices;
-    std::vector<uint>  m_triangles;
+    std::vector<float> m_normals;
+    std::vector<int>  m_faces;
 
 };
 
@@ -46,7 +47,7 @@ Mesh read_ply(const char* file_path)
     Mesh mesh;
     std::vector<float> vertices;
     std::vector<float> normals;
-    std::vector<uint>  triangles;
+    std::vector<int>   faces;
 
     std::ifstream file(file_path, std::ifstream::in | std::ifstream::binary);
 
@@ -75,7 +76,7 @@ Mesh read_ply(const char* file_path)
     }
 
     int nb_verts = 0;
-    int nb_triangles = 0;
+    int nb_faces = 0;
     std::vector<std::string> vert_properties;
 
     while (std::getline(file, line))
@@ -96,13 +97,13 @@ Mesh read_ply(const char* file_path)
             }
             else if (tokens[1] == "face")
             {
-                nb_triangles = std::stoi(tokens[2]);
+                nb_faces = std::stoi(tokens[2]);
             }
         }
 
         if (tokens[0] == "property")
         {
-            if (nb_verts && !nb_triangles)
+            if (nb_verts && !nb_faces)
             {
                 vert_properties.push_back(tokens[2]);
             }
@@ -130,9 +131,33 @@ Mesh read_ply(const char* file_path)
         normals.push_back(buf[6 * i + 4]);
         normals.push_back(buf[6 * i + 5]);
     }
-    //vertices.insert()
+
+    //read faces
+    for (int i = 0; i < nb_faces; ++i)
+    {
+        uchar nb_el;
+        file.read((char*) &nb_el, sizeof(uchar) / sizeof(char));
+        if (nb_el != 3)
+        {
+            std::cout << "Error: " << nb_el << " vertices on face " << i << std::endl;
+            break;
+        }
+
+        int idxs[3];
+        file.read((char*) &idxs[0], 3 * sizeof(int) / sizeof(char));
+        for (int j = 0; j < 3; ++j)
+            faces.push_back(idxs[j]);
+    }
 
     file.close();
+
+    std::cout << "PLY file loaded: " << nb_verts << " vertices and " << nb_faces << " faces." << std::endl;
+
+    mesh.set_faces(faces);
+    mesh.set_vertices(vertices);
+    mesh.set_normals(normals);
+
+    return mesh;
 
 }
 
