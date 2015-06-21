@@ -5,10 +5,12 @@
 #include <vector>
 #include <cmath>
 
+#include "math_tools.h"
+
 typedef unsigned char uchar;
 
 struct color {uchar r; uchar g; uchar b;};
-struct vec3f {float x; float y; float z;};
+
 
 std::vector<std::string> split_whitespaces(std::string str)
 {
@@ -161,7 +163,7 @@ Mesh read_ply(const char* file_path)
 
 }
 
-void write_ppm(std::vector<vec3f> &image, int height, int width, std::string file_path)
+void write_ppm(std::vector<float3> &image, int height, int width, std::string file_path)
 {
 
     std::ofstream file(file_path.c_str(), std::ofstream::out | std::ofstream::binary);
@@ -172,7 +174,7 @@ void write_ppm(std::vector<vec3f> &image, int height, int width, std::string fil
     {
         for (int j = 0; j < width; ++j)
         {
-            vec3f c = image.at(width * i + j);
+            float3 c = image.at(width * i + j);
             color out_c;
             out_c.r = (uchar) std::round(c.x * 255);
             out_c.g = (uchar) std::round(c.y * 255);
@@ -194,7 +196,7 @@ int main()
     uint width  = 512;
     uint height = width;
 
-    std::vector<vec3f> image;
+    std::vector<float3> image;
     image.reserve(height * width);
 
 
