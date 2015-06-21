@@ -23,7 +23,7 @@ struct float3
   inline float3 cross(const float3& f) { return float3(y * f.z - z * f.y, z * f.x - x * f.z, x * f.y - y * f.x); }
 
   inline float  squared_norm(void) { return x * x + y * y + z * z; }
-  inline float  norm(void) { return std::sqrtf(this->squared_norm()); }
+  inline float  norm(void)         { return std::sqrtf(this->squared_norm()); }
 
   inline void   normalize(void)  { float s = this->norm(); x /= s; y /= s; z /= s; }
   inline float3 normalized(void) { float s = this->norm(); return *this / s; }
@@ -34,7 +34,6 @@ struct mat3f
   mat3f() {}
   mat3f(float s) { for (int i = 0; i < 9; ++i) { data[i] = s; }; }
   float data[9]; //row major
-
 
   inline mat3f operator+(const mat3f& m) {
     mat3f out;
@@ -78,6 +77,8 @@ struct mat3f
   }
 
 };
+
+mat3f eye(void);
 
 
 #endif
