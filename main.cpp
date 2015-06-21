@@ -38,7 +38,7 @@ public:
 private:
     std::vector<float> m_vertices;
     std::vector<float> m_normals;
-    std::vector<int>  m_faces;
+    std::vector<int>   m_faces;
 
 };
 
