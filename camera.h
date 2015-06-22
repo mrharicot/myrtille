@@ -6,8 +6,8 @@
 class Camera
 {
 public:
-  Camera() { m_position = float3(0.0f); m_orientation = eye(); };
-  Camera(float fov, float aspec_ratio) : m_fov(fov), m_aspect_ratio(aspec_ratio) {}
+  Camera() : m_position(0.0f), m_orientation(eye()), m_fov(0.785398163f), m_aspect_ratio(1.0f) {}
+  //Camera(float fov, float aspec_ratio) : m_fov(fov), m_aspect_ratio(aspec_ratio) {}
 
   inline void          position(const float3& position)      { m_position = position; }
   inline const float3& position(void) const                  { return m_position; }

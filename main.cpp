@@ -8,6 +8,8 @@
 #include "string_tools.h"
 #include "math_tools.h"
 #include "mesh.h"
+#include "geometry.h"
+#include "camera.h"
 
 typedef unsigned char uchar;
 
@@ -50,8 +52,13 @@ int main()
     std::vector<float3> image;
     image.reserve(height * width);
 
-
     Mesh mesh = read_ply("mesh.ply");
+
+    triangle t(float3(0.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f), float3(1.0f, 0.0f, -5.0f));
+    ray r(float3(0.001f), float3(0.0f, 0.0f, -1.0f));
+
+    std::cout << t.intersect(r).first << std::endl;
+    std::cout << t.normal() << std::endl;
 
     //write_ppm(image, height, width, std::string("out.ppm"));
 

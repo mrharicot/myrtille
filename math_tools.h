@@ -1,6 +1,7 @@
 #ifndef MATH_TOOLS_H
 #define MATH_TOOLS_H
 
+#include <iostream>
 #include <cmath>
 
 struct float3
@@ -27,6 +28,8 @@ struct float3
 
   inline void   normalize(void)  { float s = this->norm(); x /= s; y /= s; z /= s; }
   inline float3 normalized(void) { float s = this->norm(); return *this / s; }
+
+  friend std::ostream& operator<<(std::ostream& os, const float3 &f);
 };
 
 struct mat3f
