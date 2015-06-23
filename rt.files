@@ -4,7 +4,6 @@ camera.h
 geometry.cpp
 geometry.h
 main.cpp
-Makefile
 math_tools.cpp
 math_tools.h
 mesh.cpp

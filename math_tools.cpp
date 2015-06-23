@@ -13,3 +13,8 @@ mat3f eye(void) {
   out.data[8] = 1.0f;
   return out;
 }
+
+float randf()
+{
+    return std::rand() * rand_factor;
+}

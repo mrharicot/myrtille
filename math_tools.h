@@ -2,9 +2,11 @@
 #define MATH_TOOLS_H
 
 #include <iostream>
+#include <cstdlib>
 #include <cmath>
 
-#define pi 3.14159265359
+#define pi          3.14159265359
+#define rand_factor 1.0 / RAND_MAX
 
 struct float3
 {
@@ -85,6 +87,8 @@ struct mat3f
 };
 
 mat3f eye(void);
+
+float randf();
 
 
 #endif

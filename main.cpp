@@ -4,7 +4,6 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
-#include <cstdlib>
 #include <random>
 
 #include "string_tools.h"
@@ -48,9 +47,9 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 128;
+    int width  = 32;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.reserve(height * width);
@@ -94,7 +93,10 @@ int main()
 
             float3 p = r.origin + r.direction * hit.t;
             float3 n(mesh.face(hit.face_id).normal());
-            float3 upvec = n.z < 0.9f ? float3(0.0,0.0,1.0) : float3(1.0,0.0,0.0);
+
+            bool zup = std::abs(n.z) < 0.9f;
+
+            float3 upvec = zup ? float3(0.0f, 0.0f, 1.0f) : float3(1.0f ,0.0f ,0.0f);
 
             float3 k = upvec.cross(n);
             float ct = upvec.dot(n);
@@ -109,16 +111,29 @@ int main()
                 for (int jj = 0; jj < nb_ao_samples; ++jj)
                 {
                     float r1, r2;
-                    r1 = ao_grid_step * (ii + std::rand() / RAND_MAX);
-                    r2 = ao_grid_step * (jj + std::rand() / RAND_MAX);
-                    float3 v(std::cos(2.0f * pi * r1) * std::sqrt(1.0f - r2), std::sin(2.0f * pi * r1) * std::sqrt(1.0f - r2), std::sqrt(r2));
+                    r1 = ao_grid_step * (ii + randf());
+                    r2 = ao_grid_step * (jj + randf());
+
+                    float3 v;
+                    if (zup)
+                    {
+                        v = float3(std::cos(2.0f * pi * r1) * std::sqrt(1.0f - r2),
+                                   std::sin(2.0f * pi * r1) * std::sqrt(1.0f - r2),
+                                   std::sqrt(r2));
+                    }
+                    else
+                    {
+                        v = float3(std::sqrt(r2),
+                                   std::cos(2.0f * pi * r1) * std::sqrt(1.0f - r2),
+                                   std::sin(2.0f * pi * r1) * std::sqrt(1.0f - r2));
+                    }
 
                     float3 rv = v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
                     //float3 rv = n;
 
                     ray ao_r(p + n, rv);
 
-                    Hit ao_hit = mesh.intersect(ao_r, 0.0f, 5000.0f);
+                    Hit ao_hit = mesh.intersect(ao_r, 0.0f, 10000.0f);
                     if (ao_hit)
                         ao_value += 1.0f;
 
@@ -135,6 +150,8 @@ int main()
             image.push_back(out);
 
         }
+
+        std::cout << "row " << i << " done." << std::endl;
     }
 
 
