@@ -13,6 +13,5 @@ mesh.ply
 mesh_ascii.ply
 string_tools.cpp
 string_tools.h
-Makefile
 renderer.h
 renderer.cpp

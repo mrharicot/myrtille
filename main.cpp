@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <cstdlib>
 #include <random>
 
 #include "string_tools.h"
@@ -42,13 +43,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
     file.close();
 
-    std::cout << "Wrote an " << width << " by " << height << " image." << std::endl;
+    std::cout << "Wrote a " << width << " by " << height << " image." << std::endl;
 }
 
 int main()
 {
-    int width  = 512;
+    int width  = 128;
     int height = width;
+    int nb_ao_samples = 16;
 
     std::vector<float3> image;
     image.reserve(height * width);
@@ -79,32 +81,59 @@ int main()
 
             ray r(origin, direction);
 
-            std::pair<bool, float> hit;
-            int face_id = -1;
-            triangle t;
-            float min_depth = 1e20f;
-            for (int k = 0; k < mesh.nb_faces(); ++k)
+            Hit hit = mesh.intersect(r);
+
+            //std::cout << "(" << i << "," << j << ") hit " << hit.did_hit << ", " << hit.t << ", " << hit.face_id << std::endl;
+
+            //float3 out(float(hit.did_hit));
+            if (!hit)
             {
-                t = mesh.face(k);
-                hit = t.intersect(r);
-                if (hit.first && hit.second < min_depth)
+                image.push_back(float(hit));
+                continue;
+            }
+
+            float3 p = r.origin + r.direction * hit.t;
+            float3 n(mesh.face(hit.face_id).normal());
+            float3 upvec = n.z < 0.9f ? float3(0.0,0.0,1.0) : float3(1.0,0.0,0.0);
+
+            float3 k = upvec.cross(n);
+            float ct = upvec.dot(n);
+            float st = k.norm();
+            k = k / st;
+
+            float ao_grid_step = 1.0f / nb_ao_samples;
+
+            float ao_value = 0.0f;
+            for (int ii = 0; ii < nb_ao_samples; ++ii)
+            {
+                for (int jj = 0; jj < nb_ao_samples; ++jj)
                 {
-                    face_id = k;
-                    min_depth = hit.second;
+                    float r1, r2;
+                    r1 = ao_grid_step * (ii + std::rand() / RAND_MAX);
+                    r2 = ao_grid_step * (jj + std::rand() / RAND_MAX);
+                    float3 v(std::cos(2.0f * pi * r1) * std::sqrt(1.0f - r2), std::sin(2.0f * pi * r1) * std::sqrt(1.0f - r2), std::sqrt(r2));
+
+                    float3 rv = v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
+                    //float3 rv = n;
+
+                    ray ao_r(p + n, rv);
+
+                    Hit ao_hit = mesh.intersect(ao_r, 0.0f, 5000.0f);
+                    if (ao_hit)
+                        ao_value += 1.0f;
+
+
                 }
-
             }
 
+            ao_value /= (nb_ao_samples * nb_ao_samples);
+            //std:: cout << ao_value << std::endl;
 
 
-            float3 out(hit.first);
-            if (face_id != -1)
-            {
-                float dp = std::max(-r.direction.dot(mesh.face(face_id).normal()), 0.0f);
-                out = float3(dp);
-            }
-
+            float dp = std::max(-r.direction.dot(n), 0.0f);
+            float3 out(1.0f - ao_value);
             image.push_back(out);
+
         }
     }
 

@@ -20,6 +20,28 @@ triangle Mesh::face(int i) const
     return t;
 }
 
+Hit Mesh::intersect(ray r, float t_min, float t_max)
+{
+
+    std::pair<bool, float> hit;
+    int face_id = -1;
+    triangle t;
+    float min_depth = t_max;
+    bool did_hit = false;
+    for (int k = 0; k < nb_faces(); ++k)
+    {
+        t = face(k);
+        hit = t.intersect(r);
+        if (hit.first && hit.second < min_depth)
+        {
+            face_id = k;
+            min_depth = hit.second;
+            did_hit = true;
+        }
+    }
+    return Hit(did_hit, min_depth, face_id);
+}
+
 Mesh read_ply(const char* file_path)
 {
     enum Read_mode {ASCII, BINARY};

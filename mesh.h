@@ -5,6 +5,17 @@
 
 #include "geometry.h"
 
+struct Hit
+{
+    bool did_hit;
+    float t;
+    int face_id;
+
+    Hit(bool did_hit, float t, int face_id) : did_hit(did_hit), t(t), face_id(face_id) {}
+
+    inline operator bool() const { return did_hit; }
+};
+
 class Mesh {
 public:
     Mesh() {}
@@ -19,6 +30,8 @@ public:
 
     inline int nb_vertices(void) const { return m_vertices.size() / 3; }
     inline int nb_faces(void)    const { return m_faces.size() / 3;    }
+
+    Hit intersect(ray r, float t_min = 0.0f, float t_max = 1e20f);
 
 private:
     std::vector<float> m_vertices;
