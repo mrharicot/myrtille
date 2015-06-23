@@ -4,11 +4,14 @@
 #include <iostream>
 #include <cmath>
 
+#define pi 3.14159265359
+
 struct float3
 {
   float3() {}
   float3(float s) : x(s), y(s), z(s) {}
   float3(float x, float y, float z) : x(x), y(y), z(z) {}
+  float3(const float* p) { x = p[0]; y = p[1]; z = p[2]; }
   float x, y, z;
 
   inline float3 operator+(float s) { return float3(s + x, s + y, s + z); }
@@ -23,7 +26,7 @@ struct float3
   inline float  dot(const float3& f)   { return f.x * x + f.y * y + f.z * z; }
   inline float3 cross(const float3& f) { return float3(y * f.z - z * f.y, z * f.x - x * f.z, x * f.y - y * f.x); }
 
-  inline float  squared_norm(void) { return x * x + y * y + z * z; }
+  inline float  squared_norm(void) { return dot(*this); }
   inline float  norm(void)         { return std::sqrt(this->squared_norm()); }
 
   inline void   normalize(void)  { float s = this->norm(); x /= s; y /= s; z /= s; }

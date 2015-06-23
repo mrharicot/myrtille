@@ -10,6 +10,16 @@
 
 typedef unsigned char uchar;
 
+
+triangle Mesh::face(int i) const
+{
+    triangle t;
+    t.v0 = float3(m_vertices.data() + 3 * m_faces.at(3 * i + 0));
+    t.v1 = float3(m_vertices.data() + 3 * m_faces.at(3 * i + 1));
+    t.v2 = float3(m_vertices.data() + 3 * m_faces.at(3 * i + 2));
+    return t;
+}
+
 Mesh read_ply(const char* file_path)
 {
     enum Read_mode {ASCII, BINARY};

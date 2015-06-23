@@ -19,6 +19,7 @@ struct triangle
   float3 v1;
   float3 v2;
 
+  triangle() {}
   triangle(float3 v0, float3 v1, float3 v2) : v0(v0), v1(v1), v2(v2) {}
 
   inline float3 normal() { return (v1 - v0).cross(v2 - v0).normalized(); }

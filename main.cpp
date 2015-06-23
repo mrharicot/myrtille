@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <random>
 
 #include "string_tools.h"
 #include "math_tools.h"
@@ -46,21 +47,69 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    uint width  = 512;
-    uint height = width;
+    int width  = 512;
+    int height = width;
 
     std::vector<float3> image;
     image.reserve(height * width);
 
-    Mesh mesh = read_ply("mesh.ply");
+    Mesh mesh = read_ply("cornell_box.ply");
 
-    triangle t(float3(0.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f), float3(1.0f, 0.0f, -5.0f));
-    ray r(float3(0.001f), float3(0.0f, 0.0f, -1.0f));
+    //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
+    // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
+    //
+    // auto bob = t.intersect(r);
 
-    std::cout << t.intersect(r).first << std::endl;
-    std::cout << t.normal() << std::endl;
+    //Camera camera();
 
-    //write_ppm(image, height, width, std::string("out.ppm"));
+    float fov   = 39.3076f * pi / 180.0f;
+    float focal = 0.5f * height / std::tan(0.5f * fov);
+
+    float3 origin(278.0f, 273.0f, -800.0f);
+    //float3 origin(0.0f, 0.0f, 10.0f);
+    for (int i = 0; i < height; ++i)
+    {
+        for (int j = 0; j < width; ++j)
+        {
+            float3 direction;
+            direction.x = (j + 0.5f - 0.5f * width)  / focal;
+            direction.y = (0.5f * height - i - 0.5f) / focal;
+            direction.z = 1.0f;
+            direction.normalize();
+
+            ray r(origin, direction);
+
+            std::pair<bool, float> hit;
+            int face_id = -1;
+            triangle t;
+            float min_depth = 1e20f;
+            for (int k = 0; k < mesh.nb_faces(); ++k)
+            {
+                t = mesh.face(k);
+                hit = t.intersect(r);
+                if (hit.first && hit.second < min_depth)
+                {
+                    face_id = k;
+                    min_depth = hit.second;
+                }
+
+            }
+
+
+
+            float3 out(hit.first);
+            if (face_id != -1)
+            {
+                float dp = std::max(-r.direction.dot(mesh.face(face_id).normal()), 0.0f);
+                out = float3(dp);
+            }
+
+            image.push_back(out);
+        }
+    }
+
+
+    write_ppm(image, height, width, std::string("out.ppm"));
 
     return 0;
 }
