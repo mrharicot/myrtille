@@ -16,23 +16,23 @@ struct float3
   float3(const float* p) { x = p[0]; y = p[1]; z = p[2]; }
   float x, y, z;
 
-  inline float3 operator+(float s) { return float3(s + x, s + y, s + z); }
-  inline float3 operator-(float s) { return float3(s - x, s - y, s - z); }
-  inline float3 operator*(float s) { return float3(s * x, s * y, s * z); }
-  inline float3 operator/(float s) { return float3(x / s, y / s, z / s); }
+  inline float3 operator+(float s) const { return float3(s + x, s + y, s + z); }
+  inline float3 operator-(float s) const { return float3(s - x, s - y, s - z); }
+  inline float3 operator*(float s) const { return float3(s * x, s * y, s * z); }
+  inline float3 operator/(float s) const { return float3(x / s, y / s, z / s); }
 
-  inline float3 operator+(const float3& f) { return float3(x + f.x, y + f.y, z + f.z); }
-  inline float3 operator-(const float3& f) { return float3(x - f.x, y - f.y, z - f.z); }
-  inline float3 operator*(const float3& f) { return float3(x * f.x, y * f.y, z * f.z); }
+  inline float3 operator+(const float3& f) const { return float3(x + f.x, y + f.y, z + f.z); }
+  inline float3 operator-(const float3& f) const { return float3(x - f.x, y - f.y, z - f.z); }
+  inline float3 operator*(const float3& f) const { return float3(x * f.x, y * f.y, z * f.z); }
 
-  inline float  dot(const float3& f)   { return f.x * x + f.y * y + f.z * z; }
-  inline float3 cross(const float3& f) { return float3(y * f.z - z * f.y, z * f.x - x * f.z, x * f.y - y * f.x); }
+  inline float  dot(const float3& f)   const { return f.x * x + f.y * y + f.z * z; }
+  inline float3 cross(const float3& f) const { return float3(y * f.z - z * f.y, z * f.x - x * f.z, x * f.y - y * f.x); }
 
-  inline float  squared_norm(void) { return dot(*this); }
-  inline float  norm(void)         { return std::sqrt(this->squared_norm()); }
+  inline float  squared_norm(void) const { return dot(*this); }
+  inline float  norm(void)         const { return std::sqrt(this->squared_norm()); }
 
   inline void   normalize(void)  { float s = this->norm(); x /= s; y /= s; z /= s; }
-  inline float3 normalized(void) { float s = this->norm(); return *this / s; }
+  inline float3 normalized(void) const { float s = this->norm(); return *this / s; }
 
   friend std::ostream& operator<<(std::ostream& os, const float3 &f);
 };
@@ -89,6 +89,8 @@ struct mat3f
 mat3f eye(void);
 
 float randf();
+
+float wrap(const float f);
 
 
 #endif

@@ -11,6 +11,7 @@ struct Hit
     float t;
     int face_id;
 
+    Hit() {}
     Hit(bool did_hit, float t, int face_id) : did_hit(did_hit), t(t), face_id(face_id) {}
 
     inline operator bool() const { return did_hit; }
@@ -19,24 +20,34 @@ struct Hit
 class Mesh {
 public:
     Mesh() {}
-    Mesh(std::vector<float> vertices, std::vector<int> faces)
-        : m_vertices(vertices), m_faces(faces) {}
+    inline Mesh(std::vector<float> vertices, std::vector<int> face_indices)
+        : m_vertices(vertices), m_face_indices(face_indices)
+    {
+        for (int i = 0; i < m_face_indices.size() / 3; ++i)
+        {
+            m_faces.push_back(triangle(&vertices[3 * m_face_indices[3 * i + 0]],
+                                       &vertices[3 * m_face_indices[3 * i + 1]],
+                                       &vertices[3 * m_face_indices[3 * i + 2]]));
+        }
+
+    }
 
     void set_vertices(std::vector<float> vertices)  {m_vertices = vertices;}
     void set_normals(std::vector<float> normals)  {m_normals = normals;}
-    void set_faces(std::vector<int> faces) {m_faces = faces;}
+    void set_face_indices(std::vector<int> face_indices) {m_face_indices = face_indices;}
 
-    triangle face(int i) const;
+    const triangle &face(int i) const;
 
     inline int nb_vertices(void) const { return m_vertices.size() / 3; }
-    inline int nb_faces(void)    const { return m_faces.size() / 3;    }
+    inline int nb_faces(void)    const { return m_face_indices.size() / 3;    }
 
-    Hit intersect(ray r, float t_min = 0.0f, float t_max = 1e20f);
+    Hit intersect(const ray &r, float t_min = 0.0f, float t_max = 1e20f);
 
 private:
-    std::vector<float> m_vertices;
-    std::vector<float> m_normals;
-    std::vector<int>   m_faces;
+    std::vector<float>    m_vertices;
+    std::vector<float>    m_normals;
+    std::vector<int>      m_face_indices;
+    std::vector<triangle> m_faces;
 
 };
 

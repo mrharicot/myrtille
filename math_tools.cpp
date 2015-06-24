@@ -18,3 +18,8 @@ float randf()
 {
     return std::rand() * rand_factor;
 }
+
+float wrap(const float f)
+{
+    return f > 1.0f ? f - 1.0f : f;
+}

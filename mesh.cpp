@@ -11,27 +11,21 @@
 typedef unsigned char uchar;
 
 
-triangle Mesh::face(int i) const
+const triangle& Mesh::face(int i) const
 {
-    triangle t;
-    t.v0 = float3(m_vertices.data() + 3 * m_faces.at(3 * i + 0));
-    t.v1 = float3(m_vertices.data() + 3 * m_faces.at(3 * i + 1));
-    t.v2 = float3(m_vertices.data() + 3 * m_faces.at(3 * i + 2));
-    return t;
+    return m_faces[i];
 }
 
-Hit Mesh::intersect(ray r, float t_min, float t_max)
+Hit Mesh::intersect(const ray &r, float t_min, float t_max)
 {
 
     std::pair<bool, float> hit;
     int face_id = -1;
-    triangle t;
     float min_depth = t_max;
     bool did_hit = false;
     for (int k = 0; k < nb_faces(); ++k)
     {
-        t = face(k);
-        hit = t.intersect(r);
+        hit = m_faces[k].intersect(r);
         if (hit.first && hit.second < min_depth)
         {
             face_id = k;
@@ -155,10 +149,10 @@ Mesh read_ply(const char* file_path)
 
     std::cout << "PLY file loaded: " << nb_verts << " vertices and " << nb_faces << " faces." << std::endl;
 
-    mesh.set_faces(faces);
-    mesh.set_vertices(vertices);
-    mesh.set_normals(normals);
+//    mesh.set_face_indices(faces);
+//    mesh.set_vertices(vertices);
+//    mesh.set_normals(normals);
 
-    return mesh;
+    return Mesh(vertices, faces);;
 
 }
