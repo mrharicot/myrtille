@@ -51,7 +51,7 @@ int main()
 {
     int width  = 512;
     int height = width;
-    int nb_ao_samples = 24;
+    int nb_ao_samples = 16;
 
     std::vector<float3> image;
     image.resize(height * width);
@@ -158,19 +158,21 @@ int main()
                     }
 
                     float3 rv = v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
-                    float  cosine_weight = rv.dot(n);
 
                     ray ao_r(p + n * 1e-3f, rv);
 
-                    Hit ao_hit = mesh.intersect(ao_r, 0.0f, 20000.0f);
+                    float ao_sigma = 100.0f;
+                    Hit ao_hit = mesh.intersect(ao_r);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
-                        ao_value += 1.0f;
+                        ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
 
                 }
             }
 
             ao_value /= (nb_ao_samples * nb_ao_samples);
+
+            ao_value = ao_value > 1.0f ? 1.0f : ao_value;
             //std:: cout << ao_value << std::endl;
 
 
