@@ -5,18 +5,6 @@
 
 #include "geometry.h"
 
-struct Hit
-{
-    bool did_hit;
-    float t;
-    int face_id;
-
-    Hit() {}
-    Hit(bool did_hit, float t, int face_id) : did_hit(did_hit), t(t), face_id(face_id) {}
-
-    inline operator bool() const { return did_hit; }
-};
-
 class Mesh {
 public:
     Mesh() {}
@@ -36,7 +24,7 @@ public:
     void set_normals(std::vector<float> normals)  {m_normals = normals;}
     void set_face_indices(std::vector<int> face_indices) {m_face_indices = face_indices;}
 
-    const Triangle &face(int i) const;
+    const Triangle* face(int i) const;
 
     inline int nb_vertices(void) const { return m_vertices.size() / 3; }
     inline int nb_faces(void)    const { return m_face_indices.size() / 3;    }

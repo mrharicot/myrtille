@@ -4,7 +4,7 @@
 #define MAX_FACES_PER_LEAF 8
 
 //from wikipedia
-std::pair <bool, float> Triangle::intersect(const ray &r)
+std::pair<bool, float> Triangle::intersect(const ray &r) const
 {
     float3 e0 = v1 - v0;
     float3 e1 = v2 - v0;
@@ -40,7 +40,7 @@ std::pair <bool, float> Triangle::intersect(const ray &r)
     return std::make_pair(false, 3.0f);
 }
 
-std::pair <bool, float> AABB::intersect(const ray &r)
+std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
 {
     for (int i = 0; i < 3; ++i)
     {
@@ -48,10 +48,34 @@ std::pair <bool, float> AABB::intersect(const ray &r)
             return std::make_pair(false, i);
     }
 
+    float t_start = -1e32f;
+    float t_end   =  1e32f;
     for (int i = 0; i < 3; ++i)
     {
+        float inv_d = 1.0f / r.direction.data[i];
+        float t1 = (min.data[i] - r.origin.data[i]) * inv_d;
+        float t2 = (max.data[i] - r.origin.data[i]) * inv_d;
 
+        if (t1 > t2)
+            swap(t1, t2);
+
+        if (t1 > t_start)
+            t_start = t1;
+
+        if (t2 < t_end)
+            t_end = t2;
     }
+
+    if (t_start > t_end)
+        return std::make_pair(false, 4.0f);
+
+    if (t_end < t_min)
+        return std::make_pair(false, 5.0f);
+
+    if (t_start > t_min)
+        return std::make_pair(true, t_start);
+
+    return std::make_pair(true, t_end);
 }
 
 void Node::compute_face_bb()
@@ -103,6 +127,56 @@ void Node::partition_faces()
         else
         {
             m_left_child->faces().push_back(t);
+        }
+    }
+}
+
+Hit Node::intersect(const ray &r, float t_min)
+{
+    //check hit with bounding box
+    auto bb_hit = m_face_bb.intersect(r, t_min);
+    if (!bb_hit.first)
+        return Hit(false, 0.0f, NULL);
+
+    if (m_faces.size() == 0)
+        return Hit(false, 0.0f, NULL);
+
+    Hit hit(false, 1e32f, NULL);
+    if (m_faces.size() < MAX_FACES_PER_LEAF)
+    {
+
+        for (const Triangle* tr : m_faces)
+        {
+            auto trit = tr->intersect(r);
+            if (trit.first && trit.second < hit.t)
+            {
+                hit.did_hit = true;
+                hit.face = tr;
+                hit.t = trit.second;
+            }
+        }
+        return hit;
+    }
+    else
+    {
+        Hit left_hit  =  left()->intersect(r, t_min);
+        Hit right_hit = right()->intersect(r, t_min);
+
+        if (!left_hit && !right_hit)
+        {
+            return Hit(false, 0.0f, NULL);
+        }
+        else if (left_hit && !right_hit)
+        {
+            return left_hit;
+        }
+        else if (!left_hit && right_hit)
+        {
+            return right_hit;
+        }
+        else
+        {
+            return left_hit.t < right_hit.t ? left_hit : right_hit;
         }
     }
 }

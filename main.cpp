@@ -100,12 +100,13 @@ int main()
     Node root;
     for (int i = 0; i < mesh.nb_faces(); ++i)
     {
-        root.faces().push_back(&mesh.face(i));
+        root.faces().push_back(mesh.face(i));
     }
     root.id = 0;
     build_tree(&root);
 
-/*
+
+
     #pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
     for (int i = 0; i < height; ++i)
     {
@@ -119,7 +120,7 @@ int main()
 
             ray r(origin, direction);
 
-            Hit hit = mesh.intersect(r);
+            Hit hit = root.intersect(r);
 
             if (!hit)
             {
@@ -128,7 +129,7 @@ int main()
             }
 
             float3 p = r.origin + r.direction * hit.t;
-            float3 n(mesh.face(hit.face_id).normal());
+            float3 n(hit.face->normal());
 
             bool zup = std::abs(n.z) < 0.9f;
 
@@ -171,8 +172,8 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 0.100f;
-                    Hit ao_hit = mesh.intersect(ao_r);//, 0.0f, 3.0f * ao_sigma);
+                    float ao_sigma = 0.1f;
+                    Hit ao_hit = root.intersect(ao_r);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
@@ -182,7 +183,7 @@ int main()
 
             ao_value /= (nb_ao_samples * nb_ao_samples);
 
-            ao_value = ao_value > 1.0f ? 1.0f : ao_value;
+            //ao_value = ao_value > 1.0f ? 1.0f : ao_value;
             //std:: cout << ao_value << std::endl;
 
 
@@ -201,7 +202,8 @@ int main()
         }
 
     }
-    */
+
+
 
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;

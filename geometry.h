@@ -26,11 +26,23 @@ public:
 
     inline std::pair<float3, float3> bb() const { return std::make_pair(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
 
-    std::pair <bool, float> intersect(const ray &r);
+    std::pair<bool, float> intersect(const ray &r) const;
 
     float3 v0;
     float3 v1;
     float3 v2;
+};
+
+struct Hit
+{
+    bool did_hit;
+    float t;
+    const Triangle* face;
+
+    Hit() {}
+    Hit(bool did_hit, float t, const Triangle* face) : did_hit(did_hit), t(t), face(face) {}
+
+    inline operator bool() const { return did_hit; }
 };
 
 class AABB
@@ -39,7 +51,7 @@ public:
     AABB() {}
     AABB(float3 min, float3 max) : min(min), max(max) {}
 
-    std::pair<bool, float> intersect(const ray &r);
+    std::pair<bool, float> intersect(const ray &r, float t_min = 0.0f);
 
     float3 min;
     float3 max;
@@ -67,6 +79,8 @@ public:
     void compute_centroid_bb();
     void choose_split();
     void partition_faces();
+
+    Hit intersect(const ray &r, float t_min = 0.0f);
 
     int id;
 

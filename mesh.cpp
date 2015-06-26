@@ -11,16 +11,16 @@
 typedef unsigned char uchar;
 
 
-const Triangle &Mesh::face(int i) const
+const Triangle* Mesh::face(int i) const
 {
-    return m_faces[i];
+    return &m_faces[i];
 }
 
 Hit Mesh::intersect(const ray &r, float t_min, float t_max)
 {
 
     std::pair<bool, float> hit;
-    int face_id = -1;
+    Triangle* face = NULL;
     float min_depth = t_max;
     bool did_hit = false;
     for (int k = 0; k < nb_faces(); ++k)
@@ -28,12 +28,12 @@ Hit Mesh::intersect(const ray &r, float t_min, float t_max)
         hit = m_faces[k].intersect(r);
         if (hit.first && hit.second < min_depth)
         {
-            face_id = k;
+            face = &m_faces[k];
             min_depth = hit.second;
             did_hit = true;
         }
     }
-    return Hit(did_hit, min_depth, face_id);
+    return Hit(did_hit, min_depth, face);
 }
 
 Mesh read_ply(const char* file_path)
