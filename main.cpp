@@ -68,7 +68,7 @@ int main()
     float fov   = 39.3076f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
-    float3 origin(278.0f, 273.0f, -800.0f);
+    float3 origin(0.278f, 0.273f, -0.8f);
     //float3 origin(0.0f, 0.0f, 10.0f);
 
 
@@ -95,8 +95,18 @@ int main()
         pixel_offsets.push_back(std::generate_canonical<float, std::numeric_limits<float>::digits>(gen));
     }
 
+    float scene_epsilon = 1e-6f;
 
-#pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
+    Node root;
+    for (int i = 0; i < mesh.nb_faces(); ++i)
+    {
+        root.faces().push_back(&mesh.face(i));
+    }
+    root.id = 0;
+    build_tree(&root);
+
+/*
+    #pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -159,9 +169,9 @@ int main()
 
                     float3 rv = v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
 
-                    ray ao_r(p + n * 1e-3f, rv);
+                    ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 100.0f;
+                    float ao_sigma = 0.100f;
                     Hit ao_hit = mesh.intersect(ao_r);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
@@ -191,6 +201,8 @@ int main()
         }
 
     }
+    */
+
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
 

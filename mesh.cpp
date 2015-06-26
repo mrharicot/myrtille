@@ -11,7 +11,7 @@
 typedef unsigned char uchar;
 
 
-const triangle& Mesh::face(int i) const
+const Triangle &Mesh::face(int i) const
 {
     return m_faces[i];
 }

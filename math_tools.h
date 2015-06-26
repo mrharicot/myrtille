@@ -14,7 +14,8 @@ struct float3
   float3(float s) : x(s), y(s), z(s) {}
   float3(float x, float y, float z) : x(x), y(y), z(z) {}
   float3(const float* p) { x = p[0]; y = p[1]; z = p[2]; }
-  float x, y, z;
+  union { struct { float x; float y; float z; }; float data[3]; };
+  //float x, y, z;
 
   inline float3 operator+(float s) const { return float3(s + x, s + y, s + z); }
   inline float3 operator-(float s) const { return float3(s - x, s - y, s - z); }
@@ -35,7 +36,12 @@ struct float3
   inline float3 normalized(void) const { float s = this->norm(); return *this / s; }
 
   friend std::ostream& operator<<(std::ostream& os, const float3 &f);
+
+  //inline float* data(void) { return (&x); }
 };
+
+inline float3 max(float3 lhs, float3 rhs) { return float3(std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z)); }
+inline float3 min(float3 lhs, float3 rhs) { return float3(std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y), std::min(lhs.z, rhs.z)); }
 
 struct mat3f
 {
