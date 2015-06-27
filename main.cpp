@@ -49,14 +49,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 512;
+    int width  = 256;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 4;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    Mesh mesh = read_ply("cornell_box.ply");
+    Mesh mesh = read_ply("cornell_bunny.ply");
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -202,6 +202,7 @@ int main()
         }
 
     }
+
 
 
 

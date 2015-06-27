@@ -109,7 +109,7 @@ void Node::compute_centroid_bb()
 void Node::choose_split()
 {
     int    split_axis = m_parent == NULL ? 0 : (m_parent->split().second + 1) % 3;
-    float split_value = 0.5f * (m_centroid_bb.max.data[split_axis] - m_centroid_bb.min.data[split_axis]);
+    float split_value = 0.5f * (m_centroid_bb.max.data[split_axis] + m_centroid_bb.min.data[split_axis]);
     m_split = std::make_pair(split_value, split_axis);
 }
 
