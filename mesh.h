@@ -25,6 +25,7 @@ public:
     void set_face_indices(std::vector<int> face_indices) {m_face_indices = face_indices;}
 
     const Triangle* face(int i) const;
+    inline std::vector<Triangle>& faces() { return m_faces; }
 
     inline int nb_vertices(void) const { return m_vertices.size() / 3; }
     inline int nb_faces(void)    const { return m_face_indices.size() / 3;    }

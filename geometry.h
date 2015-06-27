@@ -19,19 +19,51 @@ class Triangle
 public:
 
     Triangle() {}
-    Triangle(float3 v0, float3 v1, float3 v2) : v0(v0), v1(v1), v2(v2) {}
+    Triangle(float3 v0, float3 v1, float3 v2) : v0(v0), v1(v1), v2(v2)
+    {
+        compute_area();
+        compute_bb();
+        compute_normal();
+        compute_centroid();
+    }
+    union { struct { float3 v0; float3 v1; float3 v2; }; float3 data[3]; };
 
-    inline float3 normal()   const { return (v1 - v0).cross(v2 - v0).normalized(); }
-    inline float3 centroid() const { return (v0 + v1 + v2) / 3.0f; }
+    inline const float3& normal(void)   const { return m_normal; }
+    inline const float3& centroid(void) const { return m_centroid; }
 
-    inline std::pair<float3, float3> bb() const { return std::make_pair(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
+    inline const std::pair<float3, float3>& bb() const { return m_bounding_box; }
 
     std::pair<bool, float> intersect(const ray &r) const;
 
-    float3 v0;
-    float3 v1;
-    float3 v2;
+
+
+private:
+    inline void compute_area(void)     { m_area = 0.5f * (v1 - v0).cross(v2 - v0).norm(); }
+    inline void compute_bb(void)       { m_bounding_box = std::make_pair(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
+    inline void compute_normal(void)   { m_normal = (v1 - v0).cross(v2 - v0).normalized(); }
+    inline void compute_centroid(void) { m_centroid = (v0 + v1 + v2) / 3.0f; }
+
+    float3 m_normal;
+    float3 m_centroid;
+    float m_area;
+    std::pair<float3, float3> m_bounding_box;
+
 };
+
+inline bool compare_x(const Triangle& t1, const Triangle& t2)
+{
+    return t1.centroid().x < t2.centroid().x;
+}
+
+inline bool compare_y(const Triangle& t1, const Triangle& t2)
+{
+    return t1.centroid().y < t2.centroid().y;
+}
+
+inline bool compare_z(const Triangle& t1, const Triangle& t2)
+{
+    return t1.centroid().z < t2.centroid().z;
+}
 
 struct Hit
 {
@@ -73,28 +105,32 @@ public:
 
     inline std::pair<float, int> split(void) const { return m_split; }
 
-    inline std::vector<const Triangle*>& faces(void) { return m_faces; }
+    //inline std::vector<const Triangle*>& faces(void) { return m_faces; }
+    inline int const nb_faces(void) { return end_index - start_index; }
 
-    void compute_face_bb();
-    void compute_centroid_bb();
+    void compute_face_bb(std::vector<Triangle> &faces);
+    void compute_centroid_bb(std::vector<Triangle> &faces);
+    void sort(std::vector<Triangle> &faces);
     void choose_split();
-    void partition_faces();
+    void partition_faces(std::vector<Triangle> &faces);
 
-    Hit intersect(const ray &r, float t_min = 0.0f);
+    Hit intersect(std::vector<Triangle> &faces, const ray &r, float t_min = 0.0f);
 
     int id;
-
+    int start_index, end_index;
 
 private:
     AABB m_face_bb, m_centroid_bb;
     Node* m_left_child  = NULL;
     Node* m_right_child = NULL;
     Node* m_parent      = NULL;
-    std::vector<const Triangle*> m_faces;
+    //std::vector<const Triangle*> m_faces;
     std::pair<float, int> m_split;
+
+
 };
 
-void build_tree(Node *node);
+void build_tree(std::vector<Triangle> &faces, Node *node);
 
 
 

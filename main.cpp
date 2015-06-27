@@ -49,14 +49,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 1024;
+    int width  = 512;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    Mesh mesh = read_ply("bunny.ply");
+    Mesh mesh = read_ply("cornell_box.ply");
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -68,8 +68,8 @@ int main()
     float fov   = 39.3076f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
-    //float3 origin(0.278f, 0.273f, -0.8f);
-    float3 origin(0.0f, 0.0f, -2.0f);
+    float3 origin(0.278f, 0.273f, -0.8f);
+    //float3 origin(0.0f, 0.0f, -2.0f);
 
 
     int it_done = 0;
@@ -98,12 +98,19 @@ int main()
     float scene_epsilon = 1e-6f;
 
     Node root;
-    for (int i = 0; i < mesh.nb_faces(); ++i)
-    {
-        root.faces().push_back(mesh.face(i));
-    }
+//    std::vector<const Triangle*>& faces
+//    for (int i = 0; i < mesh.nb_faces(); ++i)
+//    {
+//        root.faces().push_back(mesh.face(i));
+//    }
     root.id = 0;
-    build_tree(&root);
+    root.start_index = 0;
+    root.end_index   = mesh.nb_faces();
+    build_tree(mesh.faces(), &root);
+
+    //ray r(0.0f, float3(0,0,1));
+
+    //Hit hit = root.intersect(mesh.faces(), r);
 
 
 
@@ -120,7 +127,7 @@ int main()
 
             ray r(origin, direction);
 
-            Hit hit = root.intersect(r);
+            Hit hit = root.intersect(mesh.faces(), r);
 
             if (!hit)
             {
@@ -173,7 +180,7 @@ int main()
                     ray ao_r(p + n * scene_epsilon, rv);
 
                     float ao_sigma = 0.1f;
-                    Hit ao_hit = root.intersect(ao_r);//, 0.0f, 3.0f * ao_sigma);
+                    Hit ao_hit = root.intersect(mesh.faces(), ao_r);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
