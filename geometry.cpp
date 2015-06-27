@@ -190,7 +190,7 @@ void build_tree(Node* node)
 
     std::cout << node->id << " - " << node->faces().size() << std::endl;
 
-    if (node->faces().size() > MAX_FACES_PER_LEAF)
+    if (node->faces().size() >= MAX_FACES_PER_LEAF)
     {
         node->left(new Node());
         node->right(new Node());
