@@ -6,6 +6,7 @@
 #include <cmath>
 #include <random>
 #include <limits>
+#include <cstdlib>
 
 #include "string_tools.h"
 #include "math_tools.h"
@@ -51,12 +52,13 @@ int main()
 {
     int width  = 512;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    Mesh mesh = read_ply("bunny.ply");
+    std::string filename = "cornell_box.ply";
+    Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -68,8 +70,15 @@ int main()
     float fov   = 39.3076f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
-    //float3 origin(0.278f, 0.273f, -0.8f);
-    float3 origin(0.0f, 0.0f, -2.0f);
+    float3 origin;
+    if (filename == "cornell_box.ply")
+    {
+        origin = float3(0.278f, 0.273f, -0.8f);
+    }
+    else
+    {
+        origin = float3(0.0f, 0.0f, -2.0f);
+    }
 
 
     int it_done = 0;
@@ -109,14 +118,12 @@ int main()
     root.end_index   = mesh.nb_faces();
     build_tree(mesh.faces(), &root);
 
+    ray r(origin, float3(0,0,1));
 
-
-/*
-    ray r(0.0f, float3(0,0,1));
-
-    Hit hit = root.intersect(mesh.faces(), r, t_min);
-    return 0;
-    */
+    //float t_min = 0;
+    //Hit hit = root.intersect(mesh.faces(), r, t_min);
+    //std::cout << hit.did_hit << " - " << hit.t << std::endl;
+    //return 0;
 
 
     Timer timer;
@@ -155,7 +162,7 @@ int main()
             float st = k.norm();
             k = k / st;
 
-            /*
+
             float ao_grid_step = 1.0f / nb_ao_samples;
 
             float ao_value = 0.0f;
@@ -189,7 +196,8 @@ int main()
                     ray ao_r(p + n * scene_epsilon, rv);
 
                     float ao_sigma = 0.1f;
-                    Hit ao_hit = root.intersect(mesh.faces(), ao_r);//, 0.0f, 3.0f * ao_sigma);
+                    float t_min = 0.0f;
+                    Hit ao_hit = root.intersect(mesh.faces(), ao_r, t_min);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
@@ -199,13 +207,11 @@ int main()
 
             ao_value /= (nb_ao_samples * nb_ao_samples);
 
-            //ao_value = ao_value > 1.0f ? 1.0f : ao_value;
-            //std:: cout << ao_value << std::endl;
 
-*/
+
             float dp = std::max(-r.direction.dot(n), 0.0f);
-            //float3 out(1.0f - ao_value);
-            float3 out(dp);
+            float3 out(1.0f - ao_value);
+            //float3 out(dp);
             image.at(i * width + j) = out;
 
             it_done += 1;
@@ -227,6 +233,10 @@ int main()
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
 
     write_ppm(image, height, width, std::string("out.ppm"));
+
+    std::cout << "converting to png" << std::endl;
+
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }
