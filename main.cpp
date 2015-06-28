@@ -51,12 +51,12 @@ int main()
 {
     int width  = 512;
     int height = width;
-    int nb_ao_samples = 8;
+    int nb_ao_samples = 16;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    Mesh mesh = read_ply("cornell_box.ply");
+    Mesh mesh = read_ply("bunny.ply");
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -68,14 +68,14 @@ int main()
     float fov   = 39.3076f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
-    float3 origin(0.278f, 0.273f, -0.8f);
-    //float3 origin(0.0f, 0.0f, -2.0f);
+    //float3 origin(0.278f, 0.273f, -0.8f);
+    float3 origin(0.0f, 0.0f, -2.0f);
 
 
     int it_done = 0;
     int previous_percent = 0;
 
-    Timer timer;
+
 
     //generate ao_samples
     std::vector<float> ao_samples;
@@ -98,23 +98,30 @@ int main()
     float scene_epsilon = 1e-6f;
 
     Node root;
-//    std::vector<const Triangle*>& faces
-//    for (int i = 0; i < mesh.nb_faces(); ++i)
-//    {
-//        root.faces().push_back(mesh.face(i));
-//    }
+    //    std::vector<const Triangle*>& faces
+    //    for (int i = 0; i < mesh.nb_faces(); ++i)
+    //    {
+    //        root.faces().push_back(mesh.face(i));
+    //    }
+
     root.id = 0;
     root.start_index = 0;
     root.end_index   = mesh.nb_faces();
     build_tree(mesh.faces(), &root);
 
-    //ray r(0.0f, float3(0,0,1));
-
-    //Hit hit = root.intersect(mesh.faces(), r);
 
 
+/*
+    ray r(0.0f, float3(0,0,1));
 
-    #pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
+    Hit hit = root.intersect(mesh.faces(), r, t_min);
+    return 0;
+    */
+
+
+    Timer timer;
+
+    //#pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -127,7 +134,8 @@ int main()
 
             ray r(origin, direction);
 
-            Hit hit = root.intersect(mesh.faces(), r);
+            float t_min = 0.0f;
+            Hit hit = root.intersect(mesh.faces(), r, t_min);
 
             if (!hit)
             {
@@ -147,6 +155,7 @@ int main()
             float st = k.norm();
             k = k / st;
 
+            /*
             float ao_grid_step = 1.0f / nb_ao_samples;
 
             float ao_value = 0.0f;
@@ -193,10 +202,10 @@ int main()
             //ao_value = ao_value > 1.0f ? 1.0f : ao_value;
             //std:: cout << ao_value << std::endl;
 
-
+*/
             float dp = std::max(-r.direction.dot(n), 0.0f);
-            float3 out(1.0f - ao_value);
-            //float3 out(dp);
+            //float3 out(1.0f - ao_value);
+            float3 out(dp);
             image.at(i * width + j) = out;
 
             it_done += 1;

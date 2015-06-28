@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "geometry.h"
 
 #define EPSILON 1e-6f
@@ -40,8 +42,9 @@ std::pair<bool, float> Triangle::intersect(const ray &r) const
     return std::make_pair(false, 3.0f);
 }
 
-std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
+std::pair <bool, float> AABB::intersect(const ray &r, float &t_min)
 {
+
     for (int i = 0; i < 3; ++i)
     {
         if (r.direction.data[i] == 0 && (r.origin.data[i] < min.data[i] || r.origin.data[i] > max.data[i]))
@@ -52,7 +55,9 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
     float t_end   =  1e32f;
     for (int i = 0; i < 3; ++i)
     {
+        //float inv_d = r.direction.data[i] == 0.0f ? 1e32f : 1.0f / r.direction.data[i];
         float inv_d = 1.0f / r.direction.data[i];
+
         float t1 = (min.data[i] - r.origin.data[i]) * inv_d;
         float t2 = (max.data[i] - r.origin.data[i]) * inv_d;
 
@@ -133,46 +138,31 @@ void Node::sort(std::vector<Triangle> &faces)
 
 void Node::partition_faces(std::vector<Triangle> &faces)
 {
-    float &split_value = m_split.first;
-    int   &split_axis  = m_split.second;
-
-//    for (int i = start_index; i < end_index; ++i)
-//    {
-//        const Triangle*& tr = faces[i];
-//        if (tr->centroid().data[split_axis] > split_value)
-//        {
-//            m_right_child->faces().push_back(t);
-//        }
-//        else
-//        {
-//            m_left_child->faces().push_back(t);
-//        }
-//    }
-
     int median_index = (start_index + end_index) / 2;
+
     left()->start_index  = start_index;
     left()->end_index    = median_index;
 
-    std::cout << id << ") start, split, end: " << start_index << ", " << median_index << ", " << end_index << std::endl;
+    //std::cout << id << ") start, split, end: " << start_index << ", " << median_index << ", " << end_index << std::endl;
 
     right()->start_index = median_index;
     right()->end_index   = end_index;
 }
 
-Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float t_min)
+Hit Node::intersect(const std::vector<Triangle> &faces, const ray &r, float &t_min)
 {
     //check hit with bounding box
     auto bb_hit = m_face_bb.intersect(r, t_min);
     if (!bb_hit.first)
         return Hit(false, 0.0f, NULL);
 
-    if (nb_faces() == 0)
-        return Hit(false, 0.0f, NULL);
+
+    //if (bb_hit.second > t_min)
+    //    return Hit(false, 0.0f, NULL);
 
     Hit hit(false, 1e32f, NULL);
     if (nb_faces() < MAX_FACES_PER_LEAF)
     {
-
         for (int i = start_index; i < end_index; ++i)
         {
             auto trit = faces[i].intersect(r);
@@ -181,6 +171,7 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float t_min)
                 hit.did_hit = true;
                 hit.face = &faces[i];
                 hit.t = trit.second;
+                t_min = trit.second;
             }
         }
         return hit;
@@ -216,16 +207,17 @@ void build_tree(std::vector<Triangle> &faces, Node* node)
     node->left(NULL);
     node->right(NULL);
 
-    std::cout << node->id << " - " << node->nb_faces() << std::endl;
+    //std::cout << node->id << " - " << node->nb_faces() << std::endl;
 
     if (node->nb_faces() >= MAX_FACES_PER_LEAF)
     {
-        node->left(new Node());
+        node->left( new Node());
         node->right(new Node());
         node->left()->parent(node);
         node->right()->parent(node);
 
         node->choose_split();
+        node->sort(faces);
         node->partition_faces(faces);
 
         node->left()->id  = 2 * node->id + 1;

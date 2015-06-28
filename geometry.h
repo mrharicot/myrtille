@@ -83,7 +83,7 @@ public:
     AABB() {}
     AABB(float3 min, float3 max) : min(min), max(max) {}
 
-    std::pair<bool, float> intersect(const ray &r, float t_min = 0.0f);
+    std::pair<bool, float> intersect(const ray &r, float &t_min);
 
     float3 min;
     float3 max;
@@ -106,7 +106,7 @@ public:
     inline std::pair<float, int> split(void) const { return m_split; }
 
     //inline std::vector<const Triangle*>& faces(void) { return m_faces; }
-    inline int const nb_faces(void) { return end_index - start_index; }
+    inline int nb_faces(void) const { return end_index - start_index; }
 
     void compute_face_bb(std::vector<Triangle> &faces);
     void compute_centroid_bb(std::vector<Triangle> &faces);
@@ -114,7 +114,7 @@ public:
     void choose_split();
     void partition_faces(std::vector<Triangle> &faces);
 
-    Hit intersect(std::vector<Triangle> &faces, const ray &r, float t_min = 0.0f);
+    Hit intersect(const std::vector<Triangle> &faces, const ray &r, float &t_min);
 
     int id;
     int start_index, end_index;
@@ -124,15 +124,11 @@ private:
     Node* m_left_child  = NULL;
     Node* m_right_child = NULL;
     Node* m_parent      = NULL;
-    //std::vector<const Triangle*> m_faces;
     std::pair<float, int> m_split;
 
 
 };
 
 void build_tree(std::vector<Triangle> &faces, Node *node);
-
-
-
 
 #endif
