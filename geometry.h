@@ -31,35 +31,30 @@ class Triangle
 public:
 
     Triangle() {}
-    Triangle(float3 v0, float3 v1, float3 v2) : v0(v0), v1(v1), v2(v2)
-    {
-        compute_area();
-        compute_bb();
-        compute_normal();
-        compute_centroid();
-    }
+    Triangle(float3 v0, float3 v1, float3 v2) : v0(v0), v1(v1), v2(v2) {}
     union { struct { float3 v0; float3 v1; float3 v2; }; float3 data[3]; };
 
-    inline const float3& normal(void)   const { return m_normal; }
-    inline const float3& centroid(void) const { return m_centroid; }
+    inline const float3 normal(void)   const { return (v1 - v0).cross(v2 - v0).normalized(); }
+    inline const float3 centroid(void) const { return (v0 + v1 + v2) / 3.0f; }
 
-    inline       AABB& bb()       { return m_bounding_box; }
-    inline const AABB& bb() const { return m_bounding_box; }
+    //inline       AABB& bb()       { return m_bounding_box; }
+    inline       AABB bb()       { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
+    inline const AABB bb() const { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
 
     std::pair<bool, float> intersect(const ray &r) const;
 
 
 
 private:
-    inline void compute_area(void)     { m_area = 0.5f * (v1 - v0).cross(v2 - v0).norm(); }
-    inline void compute_bb(void)       { m_bounding_box = AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
-    inline void compute_normal(void)   { m_normal = (v1 - v0).cross(v2 - v0).normalized(); }
-    inline void compute_centroid(void) { m_centroid = (v0 + v1 + v2) / 3.0f; }
+    //inline void compute_area(void)     { m_area = 0.5f * (v1 - v0).cross(v2 - v0).norm(); }
+    //inline void compute_bb(void)       { m_bounding_box = AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
+    //inline void compute_normal(void)   { m_normal = (v1 - v0).cross(v2 - v0).normalized(); }
+    //inline void compute_centroid(void) { m_centroid = (v0 + v1 + v2) / 3.0f; }
 
-    float3 m_normal;
-    float3 m_centroid;
-    float  m_area;
-    AABB   m_bounding_box;
+    //float3 m_normal;
+    //float3 m_centroid;
+    //float  m_area;
+    //AABB   m_bounding_box;
 
 };
 
