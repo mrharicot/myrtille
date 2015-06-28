@@ -48,7 +48,7 @@ std::pair <bool, float> AABB::intersect(const ray &r, float &t_min)
     for (int i = 0; i < 3; ++i)
     {
         if (r.direction.data[i] == 0 && (r.origin.data[i] < min.data[i] || r.origin.data[i] > max.data[i]))
-            return std::make_pair(false, i);
+            return std::make_pair(false, 1e32f);
     }
 
     float t_start = -1e32f;
@@ -72,10 +72,10 @@ std::pair <bool, float> AABB::intersect(const ray &r, float &t_min)
     }
 
     if (t_start > t_end)
-        return std::make_pair(false, 4.0f);
+        return std::make_pair(false, 1e32f);
 
     if (t_end < t_min)
-        return std::make_pair(false, 5.0f);
+        return std::make_pair(false, 1e32f);
 
     if (t_start > t_min)
     {
@@ -153,15 +153,11 @@ void Node::partition_faces(std::vector<Triangle> &faces)
 
 Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_min)
 {
-    //check hit with bounding box
-    //auto bb_hit = m_face_bb.intersect(r, t_min);
-    //if (!bb_hit.first)
-    //    return Hit(false, 0.0f, NULL);
     if (parent() == NULL)
     {
         auto bb_hit = face_bb().intersect(r, t_min);
         if (!bb_hit.first)
-            return Hit(false, 0.0f, NULL);
+            return Hit(false, 1e32f, NULL);
     }
 
     Hit hit(false, 1e32f, NULL);
@@ -192,51 +188,31 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_min)
         auto left_bb_hit  =  left()->face_bb().intersect(r, t_min);
         auto right_bb_hit = right()->face_bb().intersect(r, t_min);
 
-        Hit left_hit(false, 0, NULL);
-        Hit right_hit(false, 0, NULL);
+        Hit  first_hit(false, 1e32f, NULL);
+        Hit second_hit(false, 1e32f, NULL);
+
+        Node* first_node  =  left();
+        Node* second_node = right();
 
         if (!left_bb_hit.first && !right_bb_hit.first)
-        {
-            return Hit(false, 0, NULL);
-        }
-        else if (left_bb_hit.first && !right_bb_hit.first)
-        {
-            return left()->intersect(faces, r, t_min);
-        }
-        else if (!left_bb_hit.first && right_bb_hit.first)
-        {
-            return right()->intersect(faces, r, t_min);
-        }
-        else
-        {
-            if (left_bb_hit.second < right_bb_hit.second)
-            {
-                left_hit  =  left()->intersect(faces, r, t_min);
-                right_hit = right()->intersect(faces, r, t_min);
-            }
-            else
-            {
-                right_hit = right()->intersect(faces, r, t_min);
-                left_hit  =  left()->intersect(faces, r, t_min);
-            }
+            return Hit(false, 1e32f, NULL);
 
-            if (!left_hit && !right_hit)
-            {
-                return Hit(false, 0.0f, NULL);
-            }
-            else if (left_hit && !right_hit)
-            {
-                return left_hit;
-            }
-            else if (!left_hit && right_hit)
-            {
-                return right_hit;
-            }
-            else
-            {
-                return left_hit.t < right_hit.t ? left_hit : right_hit;
-            }
+        if (left_bb_hit.first && !right_bb_hit.first)
+            return first_node->intersect(faces, r, t_min);
+
+        if (!left_bb_hit.first && right_bb_hit.first)
+            return second_node->intersect(faces, r, t_min);
+
+        if (left_bb_hit.second > right_bb_hit.second)
+        {
+            first_node  = right();
+            second_node =  left();
         }
+
+        first_hit  =  first_node->intersect(faces, r, t_min);
+        second_hit = second_node->intersect(faces, r, t_min);
+
+        return first_hit.t < second_hit.t ? first_hit : second_hit;
     }
 }
 
@@ -246,8 +222,6 @@ void build_tree(std::vector<Triangle> &faces, Node* node)
     node->compute_centroid_bb(faces);
     node->left(NULL);
     node->right(NULL);
-
-    //std::cout << node->id << " - " << node->nb_faces() << std::endl;
 
     if (node->nb_faces() >= MAX_FACES_PER_LEAF)
     {

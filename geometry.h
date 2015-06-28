@@ -42,20 +42,6 @@ public:
     inline const AABB bb() const { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
 
     std::pair<bool, float> intersect(const ray &r) const;
-
-
-
-private:
-    //inline void compute_area(void)     { m_area = 0.5f * (v1 - v0).cross(v2 - v0).norm(); }
-    //inline void compute_bb(void)       { m_bounding_box = AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
-    //inline void compute_normal(void)   { m_normal = (v1 - v0).cross(v2 - v0).normalized(); }
-    //inline void compute_centroid(void) { m_centroid = (v0 + v1 + v2) / 3.0f; }
-
-    //float3 m_normal;
-    //float3 m_centroid;
-    //float  m_area;
-    //AABB   m_bounding_box;
-
 };
 
 inline bool compare_x(const Triangle& t1, const Triangle& t2)
