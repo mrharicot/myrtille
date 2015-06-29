@@ -61,14 +61,25 @@ inline bool compare_z(const Triangle& t1, const Triangle& t2)
     return t1.centroid().z < t2.centroid().z;
 }
 
+struct face_comparator
+{
+    face_comparator(std::vector<Triangle> *faces) : faces(faces) {}
+
+    inline bool compare_x(int lhs, int rhs) { return faces->at(lhs).centroid().x < faces->at(rhs).centroid().x; }
+    inline bool compare_y(int lhs, int rhs) { return faces->at(lhs).centroid().y < faces->at(rhs).centroid().y; }
+    inline bool compare_z(int lhs, int rhs) { return faces->at(lhs).centroid().z < faces->at(rhs).centroid().z; }
+
+    std::vector<Triangle> *faces;
+};
+
 struct Hit
 {
-    bool did_hit;
+    bool  did_hit;
     float t;
-    Triangle* face;
+    int   face_id;
 
     Hit() {}
-    Hit(bool did_hit, float t, Triangle* face) : did_hit(did_hit), t(t), face(face) {}
+    Hit(bool did_hit, float t, int face_id) : did_hit(did_hit), t(t), face_id(face_id) {}
 
     inline operator bool() const { return did_hit; }
 };

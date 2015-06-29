@@ -150,13 +150,13 @@ int main()
 
             //int3 face_indices = mesh.face_indices()
 
-            //float3 bc  = hit.face->barycentric_coords(p);
-            //int3   fvi = mesh.face_indices(hit.face_id);
+//            float3 bc  = mesh.face(hit.face_id).barycentric_coords(p);
+//            int3   fvi = mesh.face_indices(hit.face_id);
 
-            //float3 n   = mesh.normal(fvi.x) * bc.x + mesh.normal(fvi.y) * bc.y + mesh.normal(fvi.z) * bc.z;
-            //n.normalize();
+//            float3 n   = mesh.normal(fvi.x) * bc.x + mesh.normal(fvi.y) * bc.y + mesh.normal(fvi.z) * bc.z;
+//            n.normalize();
 
-            float3 n(hit.face->normal());
+            float3 n(mesh.face(hit.face_id).normal());
 
             bool zup = std::abs(n.z) < 0.9f;
 

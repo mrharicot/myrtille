@@ -173,10 +173,10 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
     {
         auto bb_hit = face_bb().intersect(r);
         if (!bb_hit.first)
-            return Hit(false, 1e32f, NULL);
+            return Hit(false, 1e32f, -1);
     }
 
-    Hit hit(false, 1e32f, NULL);
+    Hit hit(false, 1e32f, -1);
     if (nb_faces() < MAX_FACES_PER_LEAF)
     {
         for (int i = start_index; i < end_index; ++i)
@@ -185,7 +185,7 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
             if (trit.first && trit.second < hit.t && trit.second < t_max)
             {
                 hit.did_hit = true;
-                hit.face = &faces[i];
+                hit.face_id = i;
                 hit.t = trit.second;
                 t_max = hit.t;
 
@@ -199,14 +199,14 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
         auto left_bb_hit  =  left()->face_bb().intersect(r);
         auto right_bb_hit = right()->face_bb().intersect(r);
 
-        Hit  first_hit(false, 1e32f, NULL);
-        Hit second_hit(false, 1e32f, NULL);
+        Hit  first_hit(false, 1e32f, -1);
+        Hit second_hit(false, 1e32f, -1);
 
         Node* first_node  =  left();
         Node* second_node = right();
 
         if (!left_bb_hit.first && !right_bb_hit.first)
-            return Hit(false, 1e32f, NULL);
+            return Hit(false, 1e32f, -1);
 
         if (left_bb_hit.first && !right_bb_hit.first)
             return first_node->intersect(faces, r, t_max);

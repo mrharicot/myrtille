@@ -15,7 +15,7 @@ Hit Mesh::intersect(const ray &r, float t_min, float t_max)
 {
 
     std::pair<bool, float> hit;
-    Triangle* face = NULL;
+    int face_id = -1;
     float min_depth = t_max;
     bool did_hit = false;
     for (int k = 0; k < nb_faces(); ++k)
@@ -23,12 +23,12 @@ Hit Mesh::intersect(const ray &r, float t_min, float t_max)
         hit = m_faces[k].intersect(r);
         if (hit.first && hit.second < min_depth)
         {
-            face = &m_faces[k];
+            face_id = k;
             min_depth = hit.second;
             did_hit = true;
         }
     }
-    return Hit(did_hit, min_depth, face);
+    return Hit(did_hit, min_depth, face_id);
 }
 
 Mesh read_ply(const char* file_path)
