@@ -50,14 +50,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 512;
+    int width  = 1024;
     int height = width;
-    int nb_ao_samples = 8;
+    int nb_ao_samples = 16;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "cornell_bunny.ply";
+    std::string filename = "dragon.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
@@ -72,8 +72,8 @@ int main()
 
     float3 origin;
 
-    origin = float3(0.278f, 0.273f, -0.8f);
-
+    //origin = float3(0.278f, 0.273f, -0.8f);
+    origin = float3(0,0,-1.5);
 
 
     int it_done = 0;
@@ -169,6 +169,7 @@ int main()
             float ct = upvec.dot(n);
             float st = k.norm();
             k = k / st;
+
 
 
             float ao_grid_step = 1.0f / nb_ao_samples;

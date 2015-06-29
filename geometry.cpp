@@ -2,7 +2,7 @@
 
 #include "geometry.h"
 
-#define EPSILON 1e-7f
+#define EPSILON 1e-10f
 #define MAX_FACES_PER_LEAF 8
 
 //from wikipedia

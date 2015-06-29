@@ -109,17 +109,18 @@ Mesh read_ply(const char* file_path)
     //read vertices
     vertices.reserve(nb_verts);
     normals.reserve (nb_verts);
-    float buff[6 * nb_verts];
-    file.read((char*) buff, 6 * nb_verts * sizeof(float) / sizeof(char));
+    float buff[6];
+
 
     for (int i = 0; i < nb_verts; ++i)
     {
-        vertices.push_back(float3(buff + 6 * i));
+        file.read((char*) buff, 6 * sizeof(float) / sizeof(char));
+        vertices.push_back(float3(buff));
 //        vertices.push_back(buf[6 * i + 0]);
 //        vertices.push_back(buf[6 * i + 1]);
 //        vertices.push_back(buf[6 * i + 2]);
 
-        normals.push_back(float3(buff + 6 * i + 3));
+        normals.push_back(float3(buff + 3));
 //        normals.push_back(buf[6 * i + 3]);
 //        normals.push_back(buf[6 * i + 4]);
 //        normals.push_back(buf[6 * i + 5]);
