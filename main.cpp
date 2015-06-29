@@ -57,7 +57,7 @@ int main()
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "bunny.ply";
+    std::string filename = "cornell_bunny.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
@@ -71,14 +71,9 @@ int main()
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
     float3 origin;
-    if (filename == "cornell_box.ply")
-    {
-        origin = float3(0.278f, 0.273f, -0.8f);
-    }
-    else
-    {
-        origin = float3(0.0f, 0.0f, -2.0f);
-    }
+
+    origin = float3(0.278f, 0.273f, -0.8f);
+
 
 
     int it_done = 0;
@@ -128,7 +123,7 @@ int main()
 
     Timer timer;
 
-    //#pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
+    #pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -141,8 +136,8 @@ int main()
 
             ray r(origin, direction);
 
-            float t_min = 0.0f;
-            Hit hit = root.intersect(mesh.faces(), r, t_min);
+            float t_max = 1e32f;
+            Hit hit = root.intersect(mesh.faces(), r, t_max);
 
             if (!hit)
             {
@@ -161,7 +156,7 @@ int main()
             float ct = upvec.dot(n);
             float st = k.norm();
             k = k / st;
-    /*
+/*
 
             float ao_grid_step = 1.0f / nb_ao_samples;
 
@@ -196,8 +191,8 @@ int main()
                     ray ao_r(p + n * scene_epsilon, rv);
 
                     float ao_sigma = 0.1f;
-                    float t_min = 0.0f;
-                    Hit ao_hit = root.intersect(mesh.faces(), ao_r, t_min);//, 0.0f, 3.0f * ao_sigma);
+                    float t_max = 1e32f;
+                    Hit ao_hit = root.intersect(mesh.faces(), ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
@@ -236,7 +231,7 @@ int main()
 
     std::cout << "converting to png" << std::endl;
 
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }

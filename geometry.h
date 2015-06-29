@@ -20,7 +20,7 @@ public:
     AABB() {}
     AABB(float3 min, float3 max) : min(min), max(max) {}
 
-    std::pair<bool, float> intersect(const ray &r, float &t_min);
+    std::pair<bool, float> intersect(const ray &r, float t_min);
 
     float3 min;
     float3 max;
@@ -32,7 +32,8 @@ public:
 
     Triangle() {}
     Triangle(float3 v0, float3 v1, float3 v2) : v0(v0), v1(v1), v2(v2) {}
-    union { struct { float3 v0; float3 v1; float3 v2; }; float3 data[3]; };
+    //union { struct { float3 v0; float3 v1; float3 v2; }; float3 data[3]; };
+    float3 v0, v1, v2;
 
     inline const float3 normal(void)   const { return (v1 - v0).cross(v2 - v0).normalized(); }
     inline const float3 centroid(void) const { return (v0 + v1 + v2) / 3.0f; }
@@ -100,7 +101,7 @@ public:
     void choose_split();
     void partition_faces(std::vector<Triangle> &faces);
 
-    Hit intersect(std::vector<Triangle> &faces, const ray &r, float &t_min);
+    Hit intersect(std::vector<Triangle> &faces, const ray &r, float &t_max);
 
     int id;
     int start_index, end_index;

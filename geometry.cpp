@@ -2,7 +2,7 @@
 
 #include "geometry.h"
 
-#define EPSILON 1e-6f
+#define EPSILON 1e-7f
 #define MAX_FACES_PER_LEAF 8
 
 //from wikipedia
@@ -42,7 +42,7 @@ std::pair<bool, float> Triangle::intersect(const ray &r) const
     return std::make_pair(false, 3.0f);
 }
 
-std::pair <bool, float> AABB::intersect(const ray &r, float &t_min)
+std::pair <bool, float> AABB::intersect(const ray &r, float t_min = 0.0f)
 {
 
     for (int i = 0; i < 3; ++i)
@@ -151,11 +151,11 @@ void Node::partition_faces(std::vector<Triangle> &faces)
     right()->end_index   = end_index;
 }
 
-Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_min)
+Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
 {
     if (parent() == NULL)
     {
-        auto bb_hit = face_bb().intersect(r, t_min);
+        auto bb_hit = face_bb().intersect(r);
         if (!bb_hit.first)
             return Hit(false, 1e32f, NULL);
     }
@@ -166,27 +166,22 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_min)
         for (int i = start_index; i < end_index; ++i)
         {
             auto trit = faces[i].intersect(r);
-            if (trit.first && trit.second < hit.t)
+            if (trit.first && trit.second < hit.t && trit.second < t_max)
             {
                 hit.did_hit = true;
                 hit.face = &faces[i];
                 hit.t = trit.second;
-            }
-        }
+                t_max = hit.t;
 
-        if (hit)
-        {
-            float face_bb_t = hit.face->bb().intersect(r, t_min).second;
-            if (face_bb_t < t_min)
-                t_min = face_bb_t;
+            }
         }
 
         return hit;
     }
     else
     {
-        auto left_bb_hit  =  left()->face_bb().intersect(r, t_min);
-        auto right_bb_hit = right()->face_bb().intersect(r, t_min);
+        auto left_bb_hit  =  left()->face_bb().intersect(r);
+        auto right_bb_hit = right()->face_bb().intersect(r);
 
         Hit  first_hit(false, 1e32f, NULL);
         Hit second_hit(false, 1e32f, NULL);
@@ -198,10 +193,10 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_min)
             return Hit(false, 1e32f, NULL);
 
         if (left_bb_hit.first && !right_bb_hit.first)
-            return first_node->intersect(faces, r, t_min);
+            return first_node->intersect(faces, r, t_max);
 
         if (!left_bb_hit.first && right_bb_hit.first)
-            return second_node->intersect(faces, r, t_min);
+            return second_node->intersect(faces, r, t_max);
 
         if (left_bb_hit.second > right_bb_hit.second)
         {
@@ -209,8 +204,8 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_min)
             second_node =  left();
         }
 
-        first_hit  =  first_node->intersect(faces, r, t_min);
-        second_hit = second_node->intersect(faces, r, t_min);
+        first_hit  =  first_node->intersect(faces, r, t_max);
+        second_hit = second_node->intersect(faces, r, t_max);
 
         return first_hit.t < second_hit.t ? first_hit : second_hit;
     }
