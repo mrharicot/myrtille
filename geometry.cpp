@@ -42,6 +42,22 @@ std::pair<bool, float> Triangle::intersect(const ray &r) const
     return std::make_pair(false, 3.0f);
 }
 
+float3 Triangle::barycentric_coords(float3 &p) const
+{
+    float3 e0 = v1 - v0, e1 = v2 - v0, e2 = p - v0;
+
+    float d00 = e0.dot(e0);
+    float d01 = e0.dot(e1);
+    float d11 = e1.dot(e1);
+    float d20 = e2.dot(e0);
+    float d21 = e2.dot(e1);
+    float denom = 1.0f / (d00 * d11 - d01 * d01);
+
+    float alpha = (d11 * d20 - d01 * d21) * denom;
+    float beta  = (d00 * d21 - d01 * d20) * denom;
+    return float3(alpha, beta, 1.0f - alpha - beta);
+}
+
 std::pair <bool, float> AABB::intersect(const ray &r, float t_min = 0.0f)
 {
 

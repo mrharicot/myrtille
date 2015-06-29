@@ -11,11 +11,6 @@
 typedef unsigned char uchar;
 
 
-const Triangle* Mesh::face(int i) const
-{
-    return &m_faces[i];
-}
-
 Hit Mesh::intersect(const ray &r, float t_min, float t_max)
 {
 
@@ -41,9 +36,9 @@ Mesh read_ply(const char* file_path)
     enum Read_mode {ASCII, BINARY};
 
     Mesh mesh;
-    std::vector<float> vertices;
-    std::vector<float> normals;
-    std::vector<int>   faces;
+    std::vector<float3> vertices;
+    std::vector<float3> normals;
+    std::vector<int3>   faces;
 
     std::ifstream file(file_path, std::ifstream::in | std::ifstream::binary);
 
@@ -112,20 +107,22 @@ Mesh read_ply(const char* file_path)
     }
 
     //read vertices
-    vertices.reserve(3 * nb_verts);
-    normals.reserve (3 * nb_verts);
-    float buf[6 * nb_verts];
-    file.read((char*) buf, 6 * nb_verts * sizeof(float) / sizeof(char));
+    vertices.reserve(nb_verts);
+    normals.reserve (nb_verts);
+    float buff[6 * nb_verts];
+    file.read((char*) buff, 6 * nb_verts * sizeof(float) / sizeof(char));
 
     for (int i = 0; i < nb_verts; ++i)
     {
-        vertices.push_back(buf[6 * i + 0]);
-        vertices.push_back(buf[6 * i + 1]);
-        vertices.push_back(buf[6 * i + 2]);
+        vertices.push_back(float3(buff + 6 * i));
+//        vertices.push_back(buf[6 * i + 0]);
+//        vertices.push_back(buf[6 * i + 1]);
+//        vertices.push_back(buf[6 * i + 2]);
 
-        normals.push_back(buf[6 * i + 3]);
-        normals.push_back(buf[6 * i + 4]);
-        normals.push_back(buf[6 * i + 5]);
+        normals.push_back(float3(buff + 6 * i + 3));
+//        normals.push_back(buf[6 * i + 3]);
+//        normals.push_back(buf[6 * i + 4]);
+//        normals.push_back(buf[6 * i + 5]);
     }
 
     //read faces
@@ -142,7 +139,7 @@ Mesh read_ply(const char* file_path)
         int idxs[3];
         file.read((char*) &idxs[0], 3 * sizeof(int) / sizeof(char));
         for (int j = 0; j < 3; ++j)
-            faces.push_back(idxs[j]);
+            faces.push_back(idxs);
     }
 
     file.close();
@@ -153,6 +150,6 @@ Mesh read_ply(const char* file_path)
 //    mesh.set_vertices(vertices);
 //    mesh.set_normals(normals);
 
-    return Mesh(vertices, faces);;
+    return Mesh(vertices, faces, normals);
 
 }

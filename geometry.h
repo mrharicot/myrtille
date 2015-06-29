@@ -43,6 +43,7 @@ public:
     inline const AABB bb() const { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
 
     std::pair<bool, float> intersect(const ray &r) const;
+    float3 barycentric_coords(float3 &p) const;
 };
 
 inline bool compare_x(const Triangle& t1, const Triangle& t2)
