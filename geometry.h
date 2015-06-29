@@ -10,8 +10,11 @@ struct ray
 {
     float3 origin;
     float3 direction;
+    float3 inv_d;
 
-    ray(float3 origin, float3 direction) : origin(origin), direction(direction) {}
+    ray(float3 origin, float3 direction) : origin(origin), direction(direction) {
+        inv_d = float3(1.0f / direction.x, 1.0f / direction.y, 1.0f / direction.z);
+    }
 };
 
 class AABB
@@ -63,13 +66,20 @@ inline bool compare_z(const Triangle& t1, const Triangle& t2)
 
 struct face_comparator
 {
-    face_comparator(std::vector<Triangle> *faces) : faces(faces) {}
+    face_comparator(std::vector<Triangle> *faces, int axis) : faces(faces), axis(axis) {}
 
-    inline bool compare_x(int lhs, int rhs) { return faces->at(lhs).centroid().x < faces->at(rhs).centroid().x; }
-    inline bool compare_y(int lhs, int rhs) { return faces->at(lhs).centroid().y < faces->at(rhs).centroid().y; }
-    inline bool compare_z(int lhs, int rhs) { return faces->at(lhs).centroid().z < faces->at(rhs).centroid().z; }
+    inline bool operator()(int lhs, int rhs) {
+        if (axis == 0)
+            return faces->at(lhs).centroid().x < faces->at(rhs).centroid().x;
+
+        if (axis == 1)
+            return faces->at(lhs).centroid().y < faces->at(rhs).centroid().y;
+
+        return faces->at(lhs).centroid().z < faces->at(rhs).centroid().z;
+    }
 
     std::vector<Triangle> *faces;
+    int axis;
 };
 
 struct Hit
@@ -107,13 +117,13 @@ public:
     inline       AABB& face_bb(void)       { return m_face_bb; }
     inline const AABB& face_bb(void) const { return m_face_bb; }
 
-    void compute_face_bb(std::vector<Triangle> &faces);
-    void compute_centroid_bb(std::vector<Triangle> &faces);
-    void sort(std::vector<Triangle> &faces);
-    void choose_split();
-    void partition_faces(std::vector<Triangle> &faces);
+    void     compute_face_bb(std::vector<Triangle> &faces, std::vector<int> &indices);
+    void compute_centroid_bb(std::vector<Triangle> &faces, std::vector<int> &indices);
+    void                sort(std::vector<Triangle> &faces, std::vector<int> &indices);
+    void        choose_split();
+    void     partition_faces(std::vector<Triangle> &faces , std::vector<int> &indices);
 
-    Hit intersect(std::vector<Triangle> &faces, const ray &r, float &t_max);
+    Hit intersect(std::vector<Triangle> &faces, std::vector<int> &indices, const ray &r, float &t_max);
 
     int id;
     int start_index, end_index;
@@ -128,6 +138,6 @@ private:
 
 };
 
-void build_tree(std::vector<Triangle> &faces, Node *node);
+void build_tree(std::vector<Triangle> &faces, std::vector<int> &indices, Node *node);
 
 #endif

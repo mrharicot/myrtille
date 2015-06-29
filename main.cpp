@@ -50,7 +50,7 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 1024;
+    int width  = 512;
     int height = width;
     int nb_ao_samples = 8;
 
@@ -112,7 +112,10 @@ int main()
     root.start_index = 0;
     root.end_index   = mesh.nb_faces();
 
-    build_tree(mesh.faces(), &root);
+    std::vector<int> indices(mesh.nb_faces());
+    std::iota(indices.begin(), indices.end(), 0);
+
+    build_tree(mesh.faces(), indices, &root);
 
     ray r(origin, float3(0,0,1));
 
@@ -138,7 +141,7 @@ int main()
             ray r(origin, direction);
 
             float t_max = 1e32f;
-            Hit hit = root.intersect(mesh.faces(), r, t_max);
+            Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
 
             if (!hit)
             {
@@ -150,13 +153,13 @@ int main()
 
             //int3 face_indices = mesh.face_indices()
 
-//            float3 bc  = mesh.face(hit.face_id).barycentric_coords(p);
-//            int3   fvi = mesh.face_indices(hit.face_id);
+            float3 bc  = mesh.face(hit.face_id).barycentric_coords(p);
+            int3   fvi = mesh.face_indices(hit.face_id);
 
-//            float3 n   = mesh.normal(fvi.x) * bc.x + mesh.normal(fvi.y) * bc.y + mesh.normal(fvi.z) * bc.z;
-//            n.normalize();
+            float3 n   = mesh.normal(fvi.x) * bc.x + mesh.normal(fvi.y) * bc.y + mesh.normal(fvi.z) * bc.z;
+            n.normalize();
 
-            float3 n(mesh.face(hit.face_id).normal());
+            //float3 n(mesh.face(hit.face_id).normal());
 
             bool zup = std::abs(n.z) < 0.9f;
 
@@ -166,7 +169,7 @@ int main()
             float ct = upvec.dot(n);
             float st = k.norm();
             k = k / st;
-/*
+
 
             float ao_grid_step = 1.0f / nb_ao_samples;
 
@@ -200,9 +203,9 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 1000.0f;
+                    float ao_sigma = 0.5f;
                     float t_max = 1e32f;
-                    Hit ao_hit = root.intersect(mesh.faces(), ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
+                    Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
@@ -212,10 +215,10 @@ int main()
 
             ao_value /= (nb_ao_samples * nb_ao_samples);
 
-*/
+
             float dp = std::max(-r.direction.dot(n), 0.0f);
-            //float3 out(1.0f - ao_value);
-            float3 out(dp);
+            float3 out(1.0f - ao_value);
+            //float3 out(dp);
             image.at(i * width + j) = out;
 
             it_done += 1;

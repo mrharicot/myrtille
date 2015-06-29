@@ -53,9 +53,9 @@ float3 Triangle::barycentric_coords(float3 &p) const
     float d21 = e2.dot(e1);
     float denom = 1.0f / (d00 * d11 - d01 * d01);
 
-    float alpha = (d11 * d20 - d01 * d21) * denom;
-    float beta  = (d00 * d21 - d01 * d20) * denom;
-    return float3(alpha, beta, 1.0f - alpha - beta);
+    float beta  = (d11 * d20 - d01 * d21) * denom;
+    float gamma  = (d00 * d21 - d01 * d20) * denom;
+    return float3(1.0f - beta - gamma, beta, gamma);
 }
 
 std::pair <bool, float> AABB::intersect(const ray &r, float t_min = 0.0f)
@@ -71,11 +71,8 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min = 0.0f)
     float t_end   =  1e32f;
     for (int i = 0; i < 3; ++i)
     {
-        //float inv_d = r.direction.data[i] == 0.0f ? 1e32f : 1.0f / r.direction.data[i];
-        float inv_d = 1.0f / r.direction.data[i];
-
-        float t1 = (min.data[i] - r.origin.data[i]) * inv_d;
-        float t2 = (max.data[i] - r.origin.data[i]) * inv_d;
+        float t1 = (min.data[i] - r.origin.data[i]) * r.inv_d.data[i];
+        float t2 = (max.data[i] - r.origin.data[i]) * r.inv_d.data[i];
 
         if (t1 > t2)
             swap(t1, t2);
@@ -103,13 +100,14 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min = 0.0f)
     }
 }
 
-void Node::compute_face_bb(std::vector<Triangle> &faces)
+void Node::compute_face_bb(std::vector<Triangle> &faces, std::vector<int> &indices)
 {
     float3 bb_min( 1e32f);
     float3 bb_max(-1e32f);
 
-    for (int i = start_index; i < end_index; ++i)
+    for (int ii = start_index; ii < end_index; ++ii)
     {
+        int i = indices[ii];
         auto t_bb = faces[i].bb();
         bb_min = min(bb_min, t_bb.min);
         bb_max = max(bb_max, t_bb.max);
@@ -117,13 +115,14 @@ void Node::compute_face_bb(std::vector<Triangle> &faces)
     m_face_bb = AABB(bb_min, bb_max);
 }
 
-void Node::compute_centroid_bb(std::vector<Triangle>& faces)
+void Node::compute_centroid_bb(std::vector<Triangle>& faces, std::vector<int> &indices)
 {
     float3 bb_min( 1e32f);
     float3 bb_max(-1e32f);
 
-    for (int i = start_index; i < end_index; ++i)
+    for (int ii = start_index; ii < end_index; ++ii)
     {
+        int i = indices[ii];
         float3 c = faces[i].centroid();
         bb_min = min(bb_min, c);
         bb_max = max(bb_max, c);
@@ -138,25 +137,12 @@ void Node::choose_split()
     m_split = std::make_pair(split_value, split_axis);
 }
 
-void Node::sort(std::vector<Triangle> &faces)
+void Node::sort(std::vector<Triangle> &faces, std::vector<int> &indices)
 {
-    switch (m_split.second) {
-    case 0:
-        std::sort(faces.begin() + start_index, faces.begin() + end_index, compare_x);
-        break;
-    case 1:
-        std::sort(faces.begin() + start_index, faces.begin() + end_index, compare_y);
-        break;
-    case 2:
-        std::sort(faces.begin() + start_index, faces.begin() + end_index, compare_z);
-        break;
-    default:
-        std::cout << "wrong split dimension" << std::endl;
-        break;
-    }
+    std::sort(indices.begin() + start_index, indices.begin() + end_index, face_comparator(&faces, m_split.second));
 }
 
-void Node::partition_faces(std::vector<Triangle> &faces)
+void Node::partition_faces(std::vector<Triangle> &faces, std::vector<int> &indices)
 {
     int median_index = (start_index + end_index) / 2;
 
@@ -167,7 +153,7 @@ void Node::partition_faces(std::vector<Triangle> &faces)
     right()->end_index   = end_index;
 }
 
-Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
+Hit Node::intersect(std::vector<Triangle> &faces, std::vector<int> &indices, const ray &r, float &t_max)
 {
     if (parent() == NULL)
     {
@@ -179,8 +165,9 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
     Hit hit(false, 1e32f, -1);
     if (nb_faces() < MAX_FACES_PER_LEAF)
     {
-        for (int i = start_index; i < end_index; ++i)
+        for (int ii = start_index; ii < end_index; ++ii)
         {
+            int i = indices[ii];
             auto trit = faces[i].intersect(r);
             if (trit.first && trit.second < hit.t && trit.second < t_max)
             {
@@ -209,10 +196,10 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
             return Hit(false, 1e32f, -1);
 
         if (left_bb_hit.first && !right_bb_hit.first)
-            return first_node->intersect(faces, r, t_max);
+            return first_node->intersect(faces, indices, r, t_max);
 
         if (!left_bb_hit.first && right_bb_hit.first)
-            return second_node->intersect(faces, r, t_max);
+            return second_node->intersect(faces, indices, r, t_max);
 
         if (left_bb_hit.second > right_bb_hit.second)
         {
@@ -220,17 +207,17 @@ Hit Node::intersect(std::vector<Triangle> &faces, const ray &r, float &t_max)
             second_node =  left();
         }
 
-        first_hit  =  first_node->intersect(faces, r, t_max);
-        second_hit = second_node->intersect(faces, r, t_max);
+        first_hit  =  first_node->intersect(faces, indices, r, t_max);
+        second_hit = second_node->intersect(faces, indices, r, t_max);
 
         return first_hit.t < second_hit.t ? first_hit : second_hit;
     }
 }
 
-void build_tree(std::vector<Triangle> &faces, Node* node)
+void build_tree(std::vector<Triangle> &faces, std::vector<int> &indices, Node* node)
 {
-    node->compute_face_bb(faces);
-    node->compute_centroid_bb(faces);
+    node->compute_face_bb(faces, indices);
+    node->compute_centroid_bb(faces, indices);
     node->left(NULL);
     node->right(NULL);
 
@@ -242,13 +229,13 @@ void build_tree(std::vector<Triangle> &faces, Node* node)
         node->right()->parent(node);
 
         node->choose_split();
-        node->sort(faces);
-        node->partition_faces(faces);
+        node->sort(faces, indices);
+        node->partition_faces(faces, indices);
 
         node->left()->id  = 2 * node->id + 1;
         node->right()->id = 2 * node->id + 2;
 
-        build_tree(faces, node->left());
-        build_tree(faces, node->right());
+        build_tree(faces, indices, node->left());
+        build_tree(faces, indices, node->right());
     }
 }
