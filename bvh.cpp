@@ -1,9 +1,5 @@
 #include "bvh.h"
 
-BVH::BVH()
-{
-}
-
 void Node::compute_face_bb(std::vector<Triangle> &faces, std::vector<int> &indices)
 {
     float3 bb_min( 1e32f);
@@ -116,6 +112,62 @@ Hit Node::intersect(std::vector<Triangle> &faces, std::vector<int> &indices, con
 
         return first_hit.t < second_hit.t ? first_hit : second_hit;
     }
+}
+
+BVH::BVH(Mesh *mesh) : m_mesh(mesh)
+{
+    indices().resize(m_mesh->nb_faces());
+    std::iota(indices().begin(), indices().end(), 0);
+    build_tree(0, m_mesh->nb_faces());
+}
+
+void BVH::build_tree(int start_index, int end_index)
+{
+
+    if (end_index - start_index > MAX_FACES_PER_LEAF)
+    {
+        auto bbs = compute_bbs(start_index, end_index);
+
+
+
+        //nodes().push_back(Node());
+
+    }
+
+
+}
+
+std::pair<AABB, AABB> BVH::compute_bbs(int start_index, int end_index)
+{
+    float3 f_bb_min( 1e32f);
+    float3 f_bb_max(-1e32f);
+
+    float3 c_bb_min( 1e32f);
+    float3 c_bb_max(-1e32f);
+
+    for (int ii = start_index; ii < end_index; ++ii)
+    {
+        int i = m_indices[ii];
+        float3 c = m_mesh->face(i).centroid();
+        f_bb_min = min(f_bb_min, c);
+        f_bb_max = max(f_bb_max, c);
+
+        auto t_bb = m_mesh->face(i).bb();
+        c_bb_min = min(c_bb_min, t_bb.min);
+        c_bb_max = max(c_bb_max, t_bb.max);
+    }
+    return std::make_pair(AABB(f_bb_min, f_bb_max), AABB(c_bb_min, c_bb_max));
+}
+
+std::pair<int, float> BVH::choose_split(int start_index, int end_index)
+{
+
+}
+
+float BVH::sah_cost(int start_index, int end_index, int axis)
+{
+    std::sort(m_indices.begin() + start_index, m_indices.end() + end_index, face_comparator(&m_mesh->faces(), axis));
+    return 0.0f;
 }
 
 void build_tree(std::vector<Triangle> &faces, std::vector<int> &indices, Node* node)

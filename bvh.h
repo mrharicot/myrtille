@@ -9,12 +9,7 @@
 
 #include "math_tools.h"
 #include "geometry.h"
-
-class BVH
-{
-public:
-    BVH();
-};
+#include "mesh.h"
 
 class Node
 {
@@ -57,6 +52,47 @@ private:
 
 
 };
+
+class BVH
+{
+    struct Node
+    {
+        Node(AABB aabb, int l, int r) : aabb(aabb), left(l), right(r) {}
+        AABB aabb;
+        int left, right;
+    };
+
+    struct face_comparator
+    {
+        face_comparator(std::vector<Triangle> *faces, int axis) : faces(faces), axis(axis) {}
+
+        inline bool operator()(int lhs, int rhs) {
+            return faces->at(lhs).centroid().data[axis] < faces->at(rhs).centroid().data[axis];
+        }
+
+        std::vector<Triangle> *faces;
+        int axis;
+    };
+
+public:
+    BVH(Mesh *mesh);
+
+    inline Node&              node(int i)   { return m_nodes[i]; }
+    inline std::vector<Node>& nodes(void)   { return m_nodes;    }
+    inline std::vector<int>&  indices(void) { return m_indices;  }
+
+private:
+    Mesh*             m_mesh;
+    std::vector<Node> m_nodes;
+    std::vector<int>  m_indices;
+
+    void build_tree(int start_index, int end_index);
+    std::pair<AABB, AABB> compute_bbs(int start_index, int end_index);
+    std::pair<int, float> choose_split(int start_index, int end_index);
+    float                 sah_cost(int start_index, int end_index, int axis);
+};
+
+
 
 void build_tree(std::vector<Triangle> &faces, std::vector<int> &indices, Node *node);
 
