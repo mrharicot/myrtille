@@ -14,6 +14,7 @@
 #include "geometry.h"
 #include "camera.h"
 #include "time_tools.h"
+#include "bvh.h"
 
 typedef unsigned char uchar;
 
@@ -50,14 +51,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 1024;
+    int width  = 512;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "dragon.ply";
+    std::string filename = "cornell_bunny.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
@@ -72,8 +73,8 @@ int main()
 
     float3 origin;
 
-    //origin = float3(0.278f, 0.273f, -0.8f);
-    origin = float3(0,0,-1.5);
+    origin = float3(0.278f, 0.273f, -0.8f);
+    //origin = float3(0,0,-1.5);
 
 
     int it_done = 0;
@@ -108,6 +109,8 @@ int main()
     //        root.faces().push_back(mesh.face(i));
     //    }
 
+    Timer timer;
+
     root.id = 0;
     root.start_index = 0;
     root.end_index   = mesh.nb_faces();
@@ -115,17 +118,11 @@ int main()
     std::vector<int> indices(mesh.nb_faces());
     std::iota(indices.begin(), indices.end(), 0);
 
+    std::cout << "building tree. " << std::flush;
     build_tree(mesh.faces(), indices, &root);
-
-    ray r(origin, float3(0,0,1));
-
-    //float t_min = 0;
-    //Hit hit = root.intersect(mesh.faces(), r, t_min);
-    //std::cout << hit.did_hit << " - " << hit.t << std::endl;
-    //return 0;
+    std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
 
-    Timer timer;
 
     #pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
     for (int i = 0; i < height; ++i)

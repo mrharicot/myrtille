@@ -9,12 +9,15 @@ struct Timer
 
     Timer() { start_time = std::chrono::high_resolution_clock::now(); }
 
-    inline double elapsed() const {
+    inline double elapsed(bool reset_timer = false) {
         auto end_time = std::chrono::high_resolution_clock::now();
-        return std::chrono::duration_cast<std::chrono::microseconds>(end_time-start_time).count();
+        double elapsed_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time-start_time).count();
+        if (reset_timer)
+            reset();
+        return elapsed_time;
     }
 
-    //inline void reset() const { start_time = std::chrono::high_resolution_clock::now(); }
+    inline void reset() { start_time = std::chrono::high_resolution_clock::now(); }
 
 
 };
