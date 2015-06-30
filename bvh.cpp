@@ -121,34 +121,48 @@ BVH::BVH(Mesh *mesh) : m_mesh(mesh)
 {
     indices().resize(m_mesh->nb_faces());
     std::iota(indices().begin(), indices().end(), 0);
-    build_tree(0, 0, m_mesh->nb_faces());
+    int end_index = m_mesh->nb_faces();
+    AABB aabb = compute_face_bb(0, end_index);
+    m_nodes.push_back(Node(aabb, 0, end_index));
+    std::cout << "building BVH | " << end_index << " faces" << std::endl;
+    build_tree(0, 0, end_index);
 }
 
-std::pair<AABB, AABB> BVH::compute_bbs(int start_index, int end_index)
+AABB BVH::compute_face_bb(int start_index, int end_index)
 {
-    float3 f_bb_min( 1e32f);
-    float3 f_bb_max(-1e32f);
-
-    float3 c_bb_min( 1e32f);
-    float3 c_bb_max(-1e32f);
+    float3 bb_min( 1e32f);
+    float3 bb_max(-1e32f);
 
     for (int ii = start_index; ii < end_index; ++ii)
     {
         int i = m_indices[ii];
-        float3 c = m_mesh->face(i).centroid();
-        f_bb_min = min(f_bb_min, c);
-        f_bb_max = max(f_bb_max, c);
 
         auto t_bb = m_mesh->face(i).bb();
-        c_bb_min = min(c_bb_min, t_bb.min);
-        c_bb_max = max(c_bb_max, t_bb.max);
+        bb_min = min(bb_min, t_bb.min);
+        bb_max = max(bb_max, t_bb.max);
     }
-    return std::make_pair(AABB(f_bb_min, f_bb_max), AABB(c_bb_min, c_bb_max));
+    return AABB(bb_min, bb_max);
+}
+
+AABB BVH::compute_centroid_bb(int start_index, int end_index)
+{
+    float3 bb_min( 1e32f);
+    float3 bb_max(-1e32f);
+
+    for (int ii = start_index; ii < end_index; ++ii)
+    {
+        int i = m_indices[ii];
+
+        float3 c = m_mesh->face(i).centroid();
+        bb_min = min(bb_min, c);
+        bb_max = max(bb_max, c);
+    }
+    return AABB(bb_min, bb_max);
 }
 
 void BVH::sort(int start_index, int end_index, int axis)
 {
-    std::sort(m_indices.begin() + start_index, m_indices.end() + end_index, face_comparator(&m_mesh->faces(), axis));
+    std::sort(m_indices.begin() + start_index, m_indices.begin() + end_index, face_comparator(&m_mesh->faces(), axis));
 }
 
 std::pair<int, int> BVH::choose_split(int start_index, int end_index)
@@ -174,32 +188,38 @@ std::pair<float, int> BVH::sah_cost(int start_index, int end_index, int axis)
     std::vector<float> left_surfaces;
     std::vector<float> right_surfaces;
     int nb_nodes = end_index - start_index;
-    for (int i = 1; i < nb_nodes; ++i)
+    for (int i = 1; i < nb_nodes - 1; ++i)
     {
-        float left_aabb_surface  = compute_bbs(start_index, start_index + i).second.surface();
-        float right_aabb_surface = compute_bbs(start_index + i, end_index).second.surface();
+        float left_aabb_surface  =   compute_face_bb(start_index, start_index + i).surface();
+        float right_aabb_surface = compute_centroid_bb(start_index + i, end_index).surface();
 
         left_surfaces.push_back(left_aabb_surface);
         right_surfaces.push_back(right_aabb_surface);
     }
 
     std::vector<float> sah_costs;
-    for (int i = 1; i < nb_nodes; ++i)
+    for (int i = 1; i < nb_nodes - 1; ++i)
     {
         sah_costs.push_back(left_surfaces[i] * i + right_surfaces[nb_nodes - i] * (nb_nodes - i));
     }
 
     int max_index = std::distance(sah_costs.begin(), std::max_element(sah_costs.begin(), sah_costs.end()));
 
-    return std::make_pair(max_index, sah_costs[max_index]);
+    return std::make_pair(sah_costs[max_index], max_index + 1);
 }
 
 void BVH::build_tree(int current_node, int start_index, int end_index)
 {
+    std::cout << "Node " << current_node << " | " << end_index - start_index << " faces |" << std::flush;
     if (end_index - start_index > MAX_FACES_PER_LEAF)
     {
+        std::cout << " splitting | " << std::flush;
         auto best_split  = choose_split(start_index, end_index);
         int  split_index = best_split.first;
+
+        const char* axes = "xyz";
+        std::cout << "best split: " << axes[best_split.second]
+                  << " | start, split, end: " << start_index << ", " << split_index << ", " << end_index << std::flush;
 
         sort(start_index, end_index, best_split.second);
 
@@ -207,18 +227,23 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
         m_nodes[current_node].left  = left_index;
         m_nodes[current_node].right = left_index + 1;
 
-        AABB aabb = compute_bbs(start_index, split_index).first;
-        m_nodes.push_back(Node(aabb, start_index, split_index));
+        AABB aabb = compute_face_bb(start_index, split_index);
+        m_nodes.push_back(Node(aabb, -1, -1));
 
-        aabb = compute_bbs(split_index, end_index).first;
-        m_nodes.push_back(Node(aabb, split_index, end_index));
+        aabb = compute_face_bb(split_index, end_index);
+        m_nodes.push_back(Node(aabb, -1, -1));
 
-        build_tree(left_index    , start_index, best_split.first);
-        build_tree(left_index + 1, best_split.first, end_index);
+        std::cout << std::endl;
+
+        build_tree(left_index    , start_index, split_index);
+        build_tree(left_index + 1, split_index, end_index);
     }
-
-    m_nodes[current_node].left  = -start_index;
-    m_nodes[current_node].right = -end_index;
+    else
+    {
+        std::cout << " leaf node " << std::endl;
+        m_nodes[current_node].left  = -start_index;
+        m_nodes[current_node].right = -end_index;
+    }
 }
 
 void build_tree(std::vector<Triangle> &faces, std::vector<int> &indices, Node* node)

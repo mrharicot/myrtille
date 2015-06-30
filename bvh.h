@@ -88,7 +88,8 @@ private:
     std::vector<int>  m_indices;
 
     void build_tree(int current_node, int start_index, int end_index);
-    std::pair<AABB, AABB> compute_bbs(int start_index, int end_index);
+    AABB compute_face_bb(int start_index, int end_index);
+    AABB compute_centroid_bb(int start_index, int end_index);
     std::pair<int, int>   choose_split(int start_index, int end_index);
     std::pair<float, int> sah_cost(int start_index, int end_index, int axis);
     void sort(int start_index, int end_index, int axis);

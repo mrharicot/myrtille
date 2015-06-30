@@ -139,8 +139,8 @@ Mesh read_ply(const char* file_path)
 
         int idxs[3];
         file.read((char*) &idxs[0], 3 * sizeof(int) / sizeof(char));
-        for (int j = 0; j < 3; ++j)
-            faces.push_back(idxs);
+        //for (int j = 0; j < 3; ++j)
+        faces.push_back(idxs);
     }
 
     file.close();
