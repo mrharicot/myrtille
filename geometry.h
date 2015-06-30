@@ -25,6 +25,12 @@ public:
 
     std::pair<bool, float> intersect(const ray &r, float t_min = 0.0f);
 
+    inline      float surface()
+    {
+        float3 diff = max - min;
+        return 2.0f * (diff.x * diff.y +  diff.x * diff.z + diff.z * diff.y);
+    }
+
     float3 min;
     float3 max;
 };
@@ -44,6 +50,7 @@ public:
     //inline       AABB& bb()       { return m_bounding_box; }
     inline       AABB bb()       { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
     inline const AABB bb() const { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
+
 
     std::pair<bool, float> intersect(const ray &r) const;
     float3 barycentric_coords(float3 &p) const;

@@ -51,14 +51,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 512;
+    int width  = 256;
     int height = width;
-    int nb_ao_samples = 8;
+    int nb_ao_samples = 4;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "cornell_bunny.ply";
+    std::string filename = "cornell_box.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
@@ -111,6 +111,9 @@ int main()
 
     Timer timer;
 
+    BVH bvh(&mesh);
+
+    /*
     root.id = 0;
     root.start_index = 0;
     root.end_index   = mesh.nb_faces();
@@ -232,7 +235,7 @@ int main()
     }
 
 
-
+*/
 
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
@@ -241,7 +244,7 @@ int main()
 
     std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }

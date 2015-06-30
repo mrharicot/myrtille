@@ -66,7 +66,8 @@ class BVH
     {
         face_comparator(std::vector<Triangle> *faces, int axis) : faces(faces), axis(axis) {}
 
-        inline bool operator()(int lhs, int rhs) {
+        inline bool operator()(int lhs, int rhs)
+        {
             return faces->at(lhs).centroid().data[axis] < faces->at(rhs).centroid().data[axis];
         }
 
@@ -86,10 +87,11 @@ private:
     std::vector<Node> m_nodes;
     std::vector<int>  m_indices;
 
-    void build_tree(int start_index, int end_index);
+    void build_tree(int current_node, int start_index, int end_index);
     std::pair<AABB, AABB> compute_bbs(int start_index, int end_index);
-    std::pair<int, float> choose_split(int start_index, int end_index);
-    float                 sah_cost(int start_index, int end_index, int axis);
+    std::pair<int, int>   choose_split(int start_index, int end_index);
+    std::pair<float, int> sah_cost(int start_index, int end_index, int axis);
+    void sort(int start_index, int end_index, int axis);
 };
 
 
