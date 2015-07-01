@@ -51,14 +51,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 1024;
+    int width  = 512;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "dragon.ply";
+    std::string filename = "sponza.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
@@ -68,13 +68,14 @@ int main()
 
     //Camera camera();
 
-    float fov   = 39.3076f * pi / 180.0f;
+    //float fov   = 39.3076f * pi / 180.0f;
+    float fov   = 60.0f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
     float3 origin;
 
     //origin = float3(0.278f, 0.273f, -0.8f);
-    origin = float3(0,0,-1.5);
+    origin = float3(0,-0.2,0);
 
 
     int it_done = 0;
@@ -123,19 +124,19 @@ int main()
     //std::cout << bvh_hit.did_hit << " t: " << bvh_hit.t << " f_id: " << bvh_hit.face_id << std::endl;
 
 
-//    root.id = 0;
-//    root.start_index = 0;
-//    root.end_index   = mesh.nb_faces();
+    //    root.id = 0;
+    //    root.start_index = 0;
+    //    root.end_index   = mesh.nb_faces();
 
-//    std::vector<int> indices(mesh.nb_faces());
-//    std::iota(indices.begin(), indices.end(), 0);
+    //    std::vector<int> indices(mesh.nb_faces());
+    //    std::iota(indices.begin(), indices.end(), 0);
 
-//    std::cout << "building tree. " << std::flush;
-//    build_tree(mesh.faces(), indices, &root);
-      std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
+    //    std::cout << "building tree. " << std::flush;
+    //    build_tree(mesh.faces(), indices, &root);
+    std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
 
-    #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
+#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -151,6 +152,8 @@ int main()
             float t_max = 1e10f;
             //Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
             Hit hit = bvh.intersect(r, t_max);
+
+            it_done += 1;
 
             if (!hit)
             {
@@ -178,8 +181,6 @@ int main()
             float ct = upvec.dot(n);
             float st = k.norm();
             k = k / st;
-
-
 
             float ao_grid_step = 1.0f / nb_ao_samples;
 
@@ -213,7 +214,7 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 10.0f;
+                    float ao_sigma = 0.1f;
                     float t_max = 1e10f;
                     //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     Hit ao_hit = bvh.intersect(ao_r, t_max);
@@ -234,13 +235,15 @@ int main()
             //float3 out(dp);
             image.at(i * width + j) = out;
 
-//            it_done += 1;
-//            int percent_done = std::floor(100 * it_done / ((float) (height - 1) * (width - 1)));
-//            if (percent_done - previous_percent == 1 )
-//            {
-//                std::cout << percent_done << "% done" << std::endl;
-//                previous_percent = percent_done;
-//            }
+            #pragma omp critical
+            {
+                int percent_done = std::floor(100 * it_done / (height * width));
+                if (percent_done - previous_percent == 1 )
+                {
+                    std::cout << percent_done << "% done" << std::endl;
+                    previous_percent = percent_done;
+                }
+            }
 
         }
 
@@ -256,7 +259,7 @@ int main()
 
     std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }
