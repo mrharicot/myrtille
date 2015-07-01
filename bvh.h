@@ -60,6 +60,8 @@ class BVH
         Node(AABB aabb, int l, int r) : aabb(aabb), left(l), right(r) {}
         AABB aabb;
         int left, right;
+
+        inline bool is_leaf(void) const { return right < 0; }
     };
 
     struct face_comparator
@@ -78,6 +80,8 @@ class BVH
 public:
     BVH(Mesh *mesh);
 
+    Hit intersect(ray &r, float &t_max);
+
     inline Node&              node(int i)   { return m_nodes[i]; }
     inline std::vector<Node>& nodes(void)   { return m_nodes;    }
     inline std::vector<int>&  indices(void) { return m_indices;  }
@@ -93,6 +97,7 @@ private:
     std::pair<int, int>   choose_split(int start_index, int end_index);
     std::pair<float, int> sah_cost(int start_index, int end_index, int axis);
     void sort(int start_index, int end_index, int axis);
+    Hit  intersect_faces(ray &r, float &t_max, int start_index, int end_index);
 };
 
 

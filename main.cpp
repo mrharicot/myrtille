@@ -51,9 +51,9 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 256;
+    int width  = 512;
     int height = width;
-    int nb_ao_samples = 4;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
@@ -109,25 +109,33 @@ int main()
     //        root.faces().push_back(mesh.face(i));
     //    }
 
+    std::cout << "building bvh. " << std::flush;
+
     Timer timer;
 
     BVH bvh(&mesh);
 
-    /*
-    root.id = 0;
-    root.start_index = 0;
-    root.end_index   = mesh.nb_faces();
 
-    std::vector<int> indices(mesh.nb_faces());
-    std::iota(indices.begin(), indices.end(), 0);
+    //ray r(float3(0.0f), float3(0.0f, 0.0f, 1.0f));
 
-    std::cout << "building tree. " << std::flush;
-    build_tree(mesh.faces(), indices, &root);
-    std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
+    //float t_max = 1e32f;
+    //Hit bvh_hit = bvh.intersect(r, t_max);
+    //std::cout << bvh_hit.did_hit << " t: " << bvh_hit.t << " f_id: " << bvh_hit.face_id << std::endl;
 
 
+//    root.id = 0;
+//    root.start_index = 0;
+//    root.end_index   = mesh.nb_faces();
 
-    #pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
+//    std::vector<int> indices(mesh.nb_faces());
+//    std::iota(indices.begin(), indices.end(), 0);
+
+//    std::cout << "building tree. " << std::flush;
+//    build_tree(mesh.faces(), indices, &root);
+      std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
+
+
+    //#pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -141,7 +149,8 @@ int main()
             ray r(origin, direction);
 
             float t_max = 1e32f;
-            Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
+            //Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
+            Hit hit = bvh.intersect(r, t_max);
 
             if (!hit)
             {
@@ -204,9 +213,10 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 0.5f;
+                    float ao_sigma = 10.0f;
                     float t_max = 1e32f;
-                    Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
+                    //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
+                    Hit ao_hit = bvh.intersect(ao_r, t_max);
                     if (ao_hit)
                         ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
 
@@ -215,6 +225,8 @@ int main()
             }
 
             ao_value /= (nb_ao_samples * nb_ao_samples);
+
+
 
 
             float dp = std::max(-r.direction.dot(n), 0.0f);
@@ -235,7 +247,7 @@ int main()
     }
 
 
-*/
+
 
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
@@ -244,7 +256,7 @@ int main()
 
     std::cout << "converting to png" << std::endl;
 
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }
