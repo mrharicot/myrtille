@@ -175,8 +175,8 @@ Hit BVH::intersect(ray &r, float &t_max)
 
         if (left_aabb_hit.second > right_aabb_hit.second)
         {
-            swap(first,   second);
-            swap(first_t, second_t);
+            std::swap(first,   second);
+            std::swap(first_t, second_t);
         }
 
         if (second_t <= t_max)
@@ -264,43 +264,56 @@ std::pair<float, int> BVH::sah_cost(int start_index, int end_index, int axis)
     sort(start_index, end_index, axis);
 
     int nb_faces = end_index - start_index;
-    //std::vector<float> left_surfaces(nb_faces - 1);
-    //std::vector<float> right_surfaces(nb_faces - 1);
-    //    std::vector<float> sah_costs(nb_faces - 1);
-    //    for (int i = 1; i < nb_faces; ++i)
-    //    {
-    //        float left_aabb_surface  = compute_face_bb(start_index, start_index + i).surface();
-    //        float right_aabb_surface = compute_face_bb(start_index + i, end_index).surface();
-    //        //std::cout << "split: " << i << " left/right surface: " << left_aabb_surface << ", " << right_aabb_surface << std::endl;
+    std::vector<float>  left_surfaces;//(nb_faces - 1);
+    std::vector<float> right_surfaces;//(nb_faces - 1);
 
-    //        //left_surfaces[i - 1]  = left_aabb_surface;
-    //        //right_surfaces[i - 1] = right_aabb_surface;
-    //        float cost = left_aabb_surface * i + right_aabb_surface * (nb_faces - i);
-    //        sah_costs[i - 1] = cost;
-    //    }
+    AABB left_aabb = m_mesh->face(m_indices[start_index]).bb();
+    left_surfaces.push_back(left_aabb.surface());
+
+    AABB right_aabb = m_mesh->face(m_indices[end_index - 1]).bb();
+    right_surfaces.push_back(right_aabb.surface());
+
+    for (int i = 1; i < nb_faces; ++i)
+    {
+        AABB face_aabb = m_mesh->face(m_indices[start_index + i]).bb();
+        left_aabb.extend(face_aabb);
+
+        face_aabb = m_mesh->face(m_indices[end_index - 1 - i]).bb();
+        right_aabb.extend(face_aabb);
+
+        left_surfaces.push_back(  left_aabb.surface());
+        right_surfaces.push_back(right_aabb.surface());
+    }
+
+    float min_cost = 1e32f;
+    float min_id   = -1;
+
+    for (int i = 1; i < nb_faces; ++i)
+    {
+        float current_cost = left_surfaces[i] * i + right_surfaces[nb_faces - i] * (nb_faces - i);
+        if (current_cost < min_cost)
+        {
+            min_id   = i;
+            min_cost = current_cost;
+        }
+    }
 
 
-    //    for (int i = 0; i < nb_faces - 1; ++i)
-    //    {
-    //        float
+    //int max_index = std::distance(sah_costs.begin(), std::max_element(sah_costs.begin(), sah_costs.end()));
 
-    //        std::cout << "split " << i + 1 << " cost: " << cost << std::endl;
-    //    }
-
-    //    int max_index = std::distance(sah_costs.begin(), std::max_element(sah_costs.begin(), sah_costs.end()));
-
-    //    return std::make_pair(sah_costs[max_index], start_index + max_index + 1);
+    //return std::make_pair(sah_costs[max_index], start_index + max_index + 1);
 
 
-    int split_index = nb_faces / 2;
+    //int split_index = nb_faces / 2;
 
-    float cost = compute_face_bb(start_index, start_index + split_index).surface() * (split_index - start_index) +
-            compute_face_bb(start_index + split_index, end_index).surface() * (end_index - split_index);
-    return std::make_pair(cost, split_index + start_index);
+    //float cost = compute_face_bb(start_index, start_index + split_index).surface() * (split_index) +
+    //             compute_face_bb(start_index + split_index, end_index).surface() * (nb_faces - split_index);
+    return std::make_pair(min_cost, start_index + min_id);
 }
 
 void BVH::build_tree(int current_node, int start_index, int end_index)
 {
+    //std::cout << "node " << current_node << " | " << std::flush;
     if (end_index - start_index > MAX_FACES_PER_LEAF)
     {
         auto best_split  = choose_split(start_index, end_index);
@@ -308,9 +321,13 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
 
         sort(start_index, end_index, best_split.second);
 
+        //const char* axes = "xyz";
+        //std::cout << "splitting: " << axes[best_split.second] << " | " << std::flush;
+
         int left_index = m_nodes.size();
         m_nodes[current_node].left  = left_index;
         m_nodes[current_node].right = left_index + 1;
+        //std::cout << "start, split, end: " << start_index << ", " << split_index << ", " << end_index << std::endl;
 
         AABB aabb = compute_face_bb(start_index, split_index);
         m_nodes.push_back(Node(aabb, -1, -1));
@@ -323,6 +340,7 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
     }
     else
     {
+        //std::cout << "leaf node! "  << end_index - start_index << " vertices" << std::endl;
         m_nodes[current_node].left  = -start_index;
         m_nodes[current_node].right = -end_index;
     }

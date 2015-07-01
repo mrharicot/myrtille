@@ -31,7 +31,7 @@ public:
         return 2.0f * (diff.x * diff.y +  diff.x * diff.z + diff.z * diff.y);
     }
 
-    inline void extend(AABB &tr_aabb)
+    inline void extend(const AABB &tr_aabb)
     {
         mini = min(tr_aabb.mini, mini);
         maxi = max(tr_aabb.maxi, maxi);

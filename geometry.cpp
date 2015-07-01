@@ -60,7 +60,6 @@ float3 Triangle::barycentric_coords(float3 &p) const
 
 std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
 {
-
     for (int i = 0; i < 3; ++i)
     {
         if (r.direction.data[i] == 0 && (r.origin.data[i] < mini.data[i] || r.origin.data[i] > maxi.data[i]))
