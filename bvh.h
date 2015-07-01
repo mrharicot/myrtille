@@ -66,14 +66,15 @@ class BVH
 
     struct face_comparator
     {
-        face_comparator(std::vector<Triangle> *faces, int axis) : faces(faces), axis(axis) {}
+        face_comparator(Mesh *mesh, int axis) : mesh(mesh), axis(axis) {}
 
         inline bool operator()(int lhs, int rhs)
         {
-            return faces->at(lhs).centroid().data[axis] < faces->at(rhs).centroid().data[axis];
+            //return faces->at(lhs).centroid().data[axis] < faces->at(rhs).centroid().data[axis];
+            return mesh->centroid(lhs).data[axis] < mesh->centroid(rhs).data[axis];
         }
 
-        std::vector<Triangle> *faces;
+        Mesh *mesh;
         int axis;
     };
 

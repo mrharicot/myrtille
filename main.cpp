@@ -58,7 +58,7 @@ int main()
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "cornell_box.ply";
+    std::string filename = "cornell_bunny.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
@@ -135,7 +135,7 @@ int main()
       std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
 
-    //#pragma omp parallel for shared(it_done, previous_percent) num_threads(8)
+    #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -148,7 +148,7 @@ int main()
 
             ray r(origin, direction);
 
-            float t_max = 1e32f;
+            float t_max = 1e10f;
             //Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
             Hit hit = bvh.intersect(r, t_max);
 
@@ -214,7 +214,7 @@ int main()
                     ray ao_r(p + n * scene_epsilon, rv);
 
                     float ao_sigma = 10.0f;
-                    float t_max = 1e32f;
+                    float t_max = 1e10f;
                     //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     Hit ao_hit = bvh.intersect(ao_r, t_max);
                     if (ao_hit)
@@ -234,13 +234,13 @@ int main()
             //float3 out(dp);
             image.at(i * width + j) = out;
 
-            it_done += 1;
-            int percent_done = std::floor(100 * it_done / ((float) (height - 1) * (width - 1)));
-            if (percent_done - previous_percent == 1 )
-            {
-                std::cout << percent_done << "% done" << std::endl;
-                previous_percent = percent_done;
-            }
+//            it_done += 1;
+//            int percent_done = std::floor(100 * it_done / ((float) (height - 1) * (width - 1)));
+//            if (percent_done - previous_percent == 1 )
+//            {
+//                std::cout << percent_done << "% done" << std::endl;
+//                previous_percent = percent_done;
+//            }
 
         }
 

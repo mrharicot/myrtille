@@ -63,7 +63,7 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
 
     for (int i = 0; i < 3; ++i)
     {
-        if (r.direction.data[i] == 0 && (r.origin.data[i] < min.data[i] || r.origin.data[i] > max.data[i]))
+        if (r.direction.data[i] == 0 && (r.origin.data[i] < mini.data[i] || r.origin.data[i] > maxi.data[i]))
             return std::make_pair(false, 1e32f);
     }
 
@@ -71,8 +71,8 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
     float t_end   =  1e32f;
     for (int i = 0; i < 3; ++i)
     {
-        float t1 = (min.data[i] - r.origin.data[i]) * r.inv_d.data[i];
-        float t2 = (max.data[i] - r.origin.data[i]) * r.inv_d.data[i];
+        float t1 = (mini.data[i] - r.origin.data[i]) * r.inv_d.data[i];
+        float t2 = (maxi.data[i] - r.origin.data[i]) * r.inv_d.data[i];
 
         if (t1 > t2)
             swap(t1, t2);

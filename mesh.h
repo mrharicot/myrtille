@@ -15,6 +15,7 @@ public:
         for (int i = 0; i < m_face_indices.size(); ++i)
         {
             m_faces.push_back(Triangle(m_vertices[m_face_indices[i].x], m_vertices[m_face_indices[i].y], m_vertices[m_face_indices[i].z]));
+            m_centroids.push_back(m_faces[i].centroid());
         }
 
     }
@@ -33,6 +34,7 @@ public:
     inline int3&   face_indices(int i)  { return m_face_indices[i];      }
     inline float3& normal(int i)        { return m_normals[i];           }
     inline float3& vertex(int i)        { return m_vertices[i];          }
+    inline float3& centroid(int i)      { return m_centroids[i];         }
 
     Hit intersect(const ray &r, float t_min = 0.0f, float t_max = 1e20f);
 
@@ -41,6 +43,7 @@ private:
     std::vector<float3>    m_normals;
     std::vector<int3>      m_face_indices;
     std::vector<Triangle>  m_faces;
+    std::vector<float3>    m_centroids;
 
 };
 

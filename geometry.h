@@ -21,18 +21,24 @@ class AABB
 {
 public:
     AABB() {}
-    AABB(float3 min, float3 max) : min(min), max(max) {}
+    AABB(float3 min, float3 max) : mini(min), maxi(max) {}
 
     std::pair<bool, float> intersect(const ray &r, float t_min = 0.0f);
 
-    inline      float surface()
+    inline float surface()
     {
-        float3 diff = max - min;
+        float3 diff = maxi - mini;
         return 2.0f * (diff.x * diff.y +  diff.x * diff.z + diff.z * diff.y);
     }
 
-    float3 min;
-    float3 max;
+    inline void extend(AABB &tr_aabb)
+    {
+        mini = min(tr_aabb.mini, mini);
+        maxi = max(tr_aabb.maxi, maxi);
+    }
+
+    float3 mini;
+    float3 maxi;
 };
 
 class Triangle
@@ -55,6 +61,8 @@ public:
     std::pair<bool, float> intersect(const ray &r) const;
     float3 barycentric_coords(float3 &p) const;
 };
+
+
 
 inline bool compare_x(const Triangle& t1, const Triangle& t2)
 {
