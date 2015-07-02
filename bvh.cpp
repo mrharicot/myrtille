@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <numeric>
 
+
 #include "bvh.h"
 
 BVH::BVH(Mesh *mesh) : m_mesh(mesh)
@@ -15,21 +16,28 @@ BVH::BVH(Mesh *mesh) : m_mesh(mesh)
 
     std::cout << "building BVH | " << end_index << " faces" << std::endl;
 
-    build_tree(0, 0, end_index);
+    m_nodes.resize(m_mesh->nb_faces() * 2);
 
-//    std::vector<Triangle> new_faces;
-//    std::vector<int>      new_indices;
-//    std::vector<int3>     new_face_indices;
-//    for (int i = 0; i < m_mesh->nb_faces(); ++i)
-//    {
-//        int ii = m_indices[i];
-//        new_indices.push_back(i);
-//        new_faces.push_back(m_mesh->face(ii));
-//        new_face_indices.push_back(m_mesh->face_index(ii));
-//    }
-//    m_mesh->faces() = new_faces;
-//    m_mesh->face_indices() = new_face_indices;
-//    m_indices = new_indices;
+    nb_nodes = 1;
+    build_tree(0, 0, end_index);
+    m_nodes.resize(nb_nodes);
+
+    //    std::vector<Triangle> new_faces;
+    //    std::vector<int>      new_indices;
+    //    std::vector<int3>     new_face_indices;
+    //    for (int i = 0; i < m_mesh->nb_faces(); ++i)
+    //    {
+    //        int ii = m_indices[i];
+    //        new_indices.push_back(i);
+    //        new_faces.push_back(m_mesh->face(ii));
+    //        new_face_indices.push_back(m_mesh->face_index(ii));
+    //    }
+    //    m_mesh->faces() = new_faces;
+    //    m_mesh->face_indices() = new_face_indices;
+    //    m_indices = new_indices;
+
+//    for (auto &f : m_futures)
+//        f.get();
 }
 
 Hit BVH::intersect(ray &r, float &t_max)
@@ -164,14 +172,14 @@ std::pair<float, int> BVH::sah_cost(int start_index, int end_index, int axis)
     sort(start_index, end_index, axis);
 
     int nb_faces = end_index - start_index;
-    std::vector<float>  left_surfaces;//(nb_faces - 1);
-    std::vector<float> right_surfaces;//(nb_faces - 1);
+    std::vector<float>  left_surfaces(nb_faces);
+    std::vector<float> right_surfaces(nb_faces);
 
     AABB left_aabb = m_mesh->face(m_indices[start_index]).bb();
-    left_surfaces.push_back(left_aabb.surface());
+    left_surfaces[0] = left_aabb.surface();
 
     AABB right_aabb = m_mesh->face(m_indices[end_index - 1]).bb();
-    right_surfaces.push_back(right_aabb.surface());
+    right_surfaces[0] = right_aabb.surface();
 
     for (int i = 1; i < nb_faces; ++i)
     {
@@ -181,8 +189,8 @@ std::pair<float, int> BVH::sah_cost(int start_index, int end_index, int axis)
         face_aabb = m_mesh->face(m_indices[end_index - 1 - i]).bb();
         right_aabb.extend(face_aabb);
 
-        left_surfaces.push_back(  left_aabb.surface());
-        right_surfaces.push_back(right_aabb.surface());
+        left_surfaces[i]  =  left_aabb.surface();
+        right_surfaces[i] = right_aabb.surface();
     }
 
     float min_cost = 1e32f;
@@ -224,23 +232,36 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
         //const char* axes = "xyz";
         //std::cout << "splitting: " << axes[best_split.second] << " | " << std::flush;
 
-        int left_index = m_nodes.size();
+        AABB left_aabb  = compute_face_bb(start_index, split_index);
+        AABB right_aabb = compute_face_bb(split_index, end_index);
+
+
+        int left_index = __sync_fetch_and_add(&nb_nodes, 2);
+
+        m_nodes[left_index    ] = Node(left_aabb,  -1, -1);
+        m_nodes[left_index + 1] = Node(right_aabb, -1, -1);
+
+
         m_nodes[current_node].left  = left_index;
         m_nodes[current_node].right = left_index + 1;
-        //std::cout << "start, split, end: " << start_index << ", " << split_index << ", " << end_index << std::endl;
 
-        AABB aabb = compute_face_bb(start_index, split_index);
-        m_nodes.push_back(Node(aabb, -1, -1));
 
-        aabb = compute_face_bb(split_index, end_index);
-        m_nodes.push_back(Node(aabb, -1, -1));
+        if (end_index - start_index > m_mesh->nb_faces() / 12)
+        {
+            auto left = std::async(std::launch::async, [&]() {
+                  return build_tree(left_index    , start_index, split_index);
+                });
+            build_tree(left_index + 1, split_index,   end_index);
+        }
+        else
+        {
+            build_tree(left_index    , start_index, split_index);
+            build_tree(left_index + 1, split_index,   end_index);
+        }
 
-        build_tree(left_index    , start_index, split_index);
-        build_tree(left_index + 1, split_index, end_index);
     }
     else
     {
-        //std::cout << "leaf node! "  << end_index - start_index << " vertices" << std::endl;
         m_nodes[current_node].left  = -start_index;
         m_nodes[current_node].right = -end_index;
     }

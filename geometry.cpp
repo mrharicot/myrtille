@@ -2,7 +2,7 @@
 
 #include "geometry.h"
 
-#define EPSILON 1e-10f
+#define EPSILON 0//1e-8f
 
 
 //from wikipedia

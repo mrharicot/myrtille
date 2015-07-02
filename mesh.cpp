@@ -109,31 +109,31 @@ Mesh read_ply(const char* file_path)
     //read vertices
     vertices.reserve(nb_verts);
     normals.reserve (nb_verts);
-    float buff[6];
+    float buff[3];
+
+    bool has_normals = vert_properties.size() == 6;
 
 
     for (int i = 0; i < nb_verts; ++i)
     {
-        file.read((char*) buff, 6 * sizeof(float) / sizeof(char));
+        file.read((char*) buff, 3 * sizeof(float) / sizeof(char));
         vertices.push_back(float3(buff));
-//        vertices.push_back(buf[6 * i + 0]);
-//        vertices.push_back(buf[6 * i + 1]);
-//        vertices.push_back(buf[6 * i + 2]);
 
-        normals.push_back(float3(buff + 3));
-//        normals.push_back(buf[6 * i + 3]);
-//        normals.push_back(buf[6 * i + 4]);
-//        normals.push_back(buf[6 * i + 5]);
+        if (has_normals)
+        {
+            file.read((char*) buff, 3 * sizeof(float) / sizeof(char));
+            normals.push_back(float3(buff));
+        }
     }
 
     //read faces
     for (int i = 0; i < nb_faces; ++i)
     {
         uchar nb_el;
-        file.read((char*) &nb_el, sizeof(uchar) / sizeof(char));
+        file.read((char*) &nb_el, 1);
         if (nb_el != 3)
         {
-            std::cout << "Error: " << nb_el << " vertices on face " << i << std::endl;
+            std::cout << "Error: " << (int) nb_el << " vertices on face " << i << std::endl;
             break;
         }
 
@@ -147,10 +147,10 @@ Mesh read_ply(const char* file_path)
 
     std::cout << "PLY file loaded: " << nb_verts << " vertices and " << nb_faces << " faces." << std::endl;
 
-//    mesh.set_face_indices(faces);
-//    mesh.set_vertices(vertices);
-//    mesh.set_normals(normals);
+    //    mesh.set_face_indices(faces);
+    //    mesh.set_vertices(vertices);
+    //    mesh.set_normals(normals);
 
-    return Mesh(vertices, faces, normals);
+    return Mesh(vertices, faces, normals, has_normals);
 
 }

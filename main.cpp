@@ -51,14 +51,14 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 512;
+    int width  = 1024;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "dragon.ply";
+    std::string filename = "sponza.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     bool verbose = false;
@@ -77,8 +77,9 @@ int main()
     float3 origin;
 
     //origin = float3(0.278f, 0.273f, -0.8f);
-    origin = float3(0,0,-1.5);
+    //origin = float3(0,0.1,0.1);
 
+    origin = float3(0.0f, 0.05f, 0.0f);
 
     int it_done = 0;
     int previous_percent = 0;
@@ -111,7 +112,6 @@ int main()
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
-
     #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
     for (int i = 0; i < height; ++i)
     {
@@ -139,15 +139,10 @@ int main()
 
             float3 p = r.origin + r.direction * hit.t;
 
-            //int3 face_indices = mesh.face_indices()
+            float3 n = mesh.face_normal(hit.face_id, p);
 
-            float3 bc  = mesh.face(hit.face_id).barycentric_coords(p);
-            int3   fvi = mesh.face_index(hit.face_id);
+            /*
 
-            float3 n   = mesh.normal(fvi.x) * bc.x + mesh.normal(fvi.y) * bc.y + mesh.normal(fvi.z) * bc.z;
-            n.normalize();
-
-            //float3 n(mesh.face(hit.face_id).normal());
 
             bool zup = std::abs(n.z) < 0.9f;
 
@@ -190,7 +185,7 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 1000.0f;
+                    float ao_sigma = 0.1f;
                     float t_max = 1e10f;
                     //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     Hit ao_hit = bvh.intersect(ao_r, t_max);
@@ -204,11 +199,11 @@ int main()
             ao_value /= (nb_ao_samples * nb_ao_samples);
 
 
-
+*/
 
             float dp = std::max(-r.direction.dot(n), 0.0f);
-            float3 out(1.0f - ao_value);
-            //float3 out(dp);
+            //float3 out(1.0f - ao_value);
+            float3 out(dp);
             image.at(i * width + j) = out;
 
             if (verbose)

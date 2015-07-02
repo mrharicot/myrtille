@@ -6,6 +6,9 @@
 #include <vector>
 #include <utility>
 #include <algorithm>
+#include <thread>
+#include <atomic>
+#include <future>
 
 #include "math_tools.h"
 #include "geometry.h"
@@ -15,6 +18,7 @@ class BVH
 {
     struct Node
     {
+        Node() {}
         Node(AABB aabb, int l, int r) : aabb(aabb), left(l), right(r) {}
         AABB aabb;
         int left, right;
@@ -46,9 +50,12 @@ public:
     inline std::vector<int>&  indices(void) { return m_indices;  }
 
 private:
-    Mesh*             m_mesh;
-    std::vector<Node> m_nodes;
-    std::vector<int>  m_indices;
+    Mesh*                           m_mesh;
+    std::vector<Node>               m_nodes;
+    std::vector<int>                m_indices;
+    std::vector<std::future<void> > m_futures;
+
+    int nb_nodes;
 
     void build_tree(int current_node, int start_index, int end_index);
     AABB compute_face_bb(int start_index, int end_index);
