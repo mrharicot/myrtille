@@ -26,12 +26,13 @@ public:
 
     inline const Triangle& face(int i) const        { return m_faces[i]; }
     inline       std::vector<Triangle>& faces()     { return m_faces;    }
+    inline       std::vector<int3>& face_indices()   { return m_face_indices; }
     //inline const std::vector<Triangle>& faces() const { return m_faces; }
 
     inline int nb_vertices(void) const  { return m_vertices.size();      }
     inline int nb_faces(void)    const  { return m_face_indices.size();  }
 
-    inline int3&   face_indices(int i)  { return m_face_indices[i];      }
+    inline int3&   face_index(int i)  { return m_face_indices[i];      }
     inline float3& normal(int i)        { return m_normals[i];           }
     inline float3& vertex(int i)        { return m_vertices[i];          }
     inline float3& centroid(int i)      { return m_centroids[i];         }
