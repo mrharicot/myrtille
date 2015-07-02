@@ -1,7 +1,7 @@
 #ifndef BVH_H
 #define BVH_H
 
-#define MAX_FACES_PER_LEAF 8
+#define MAX_FACES_PER_LEAF 1
 
 #include <vector>
 #include <utility>

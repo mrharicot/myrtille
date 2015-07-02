@@ -2,7 +2,7 @@
 
 #include "geometry.h"
 
-#define EPSILON 0//1e-8f
+#define EPSILON 1e-8f
 
 
 //from wikipedia
@@ -16,7 +16,7 @@ std::pair<bool, float> Triangle::intersect(const ray &r) const
     float det = e0.dot(p);
 
     if(det > -EPSILON && det < EPSILON)
-        return std::make_pair(false, 0.0f);
+        return std::make_pair(false, 1e32f);
 
     float inv_det = 1.0f / det;
 
@@ -25,21 +25,21 @@ std::pair<bool, float> Triangle::intersect(const ray &r) const
     float u = t.dot(p) * inv_det;
 
     if(u < 0.0f || u > 1.0f)
-        return std::make_pair(false, 1.0f);
+        return std::make_pair(false, 1e32f);
 
     float3 q = t.cross(e0);
 
     float v = r.direction.dot(q) * inv_det;
 
     if(v < 0.0f || u + v  > 1.0f)
-        return std::make_pair(false, 2.0f);
+        return std::make_pair(false, 1e32f);
 
     float d = e1.dot(q) * inv_det;
 
     if(d > EPSILON)
         return std::make_pair(true, d);
 
-    return std::make_pair(false, 3.0f);
+    return std::make_pair(false, 1e32f);
 }
 
 float3 Triangle::barycentric_coords(float3 &p) const
@@ -74,7 +74,7 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
         float t2 = (maxi.data[i] - r.origin.data[i]) * r.inv_d.data[i];
 
         if (t1 > t2)
-            swap(t1, t2);
+            std::swap(t1, t2);
 
         if (t1 > t_start)
             t_start = t1;
@@ -95,6 +95,7 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
     }
     else
     {
+        //std::cout << "aabb intersection inside" << std::endl;
         return std::make_pair(true, t_end);
     }
 }

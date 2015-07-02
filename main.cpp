@@ -51,7 +51,7 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 1024;
+    int width  = 512;
     int height = width;
     int nb_ao_samples = 8;
 
@@ -61,7 +61,7 @@ int main()
     std::string filename = "sponza.ply";
     Mesh mesh = read_ply(filename.c_str());
 
-    bool verbose = false;
+    bool verbose = true;
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -79,7 +79,7 @@ int main()
     //origin = float3(0.278f, 0.273f, -0.8f);
     //origin = float3(0,0.1,0.1);
 
-    origin = float3(0.0f, 0.05f, 0.0f);
+    origin = float3(0.0f, 0.05f, 0.05f);
 
     int it_done = 0;
     int previous_percent = 0;
@@ -128,6 +128,7 @@ int main()
             float t_max = 1e10f;
             //Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
             Hit hit = bvh.intersect(r, t_max);
+            //Hit hit = mesh.intersect(r);
 
             it_done += 1;
 
@@ -141,7 +142,7 @@ int main()
 
             float3 n = mesh.face_normal(hit.face_id, p);
 
-            /*
+
 
 
             bool zup = std::abs(n.z) < 0.9f;
@@ -199,11 +200,11 @@ int main()
             ao_value /= (nb_ao_samples * nb_ao_samples);
 
 
-*/
+
 
             float dp = std::max(-r.direction.dot(n), 0.0f);
-            //float3 out(1.0f - ao_value);
-            float3 out(dp);
+            float3 out(1.0f - ao_value);
+            //float3 out(dp);
             image.at(i * width + j) = out;
 
             if (verbose)
@@ -229,9 +230,9 @@ int main()
 
     write_ppm(image, height, width, std::string("out.ppm"));
 
-    //std::cout << "converting to png" << std::endl;
+    std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }
