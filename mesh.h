@@ -12,7 +12,7 @@ public:
     inline Mesh(std::vector<float3> vertices, std::vector<int3> face_indices, std::vector<float3> normals, bool has_normals)
         : m_vertices(vertices), m_face_indices(face_indices), m_normals(normals), has_normals(has_normals)
     {
-        for (int i = 0; i < m_face_indices.size(); ++i)
+        for (size_t i = 0; i < m_face_indices.size(); ++i)
         {
             m_faces.push_back(Triangle(m_vertices[m_face_indices[i].x], m_vertices[m_face_indices[i].y], m_vertices[m_face_indices[i].z]));
             m_centroids.push_back(m_faces[i].centroid());
@@ -56,8 +56,8 @@ public:
 
 private:
     std::vector<float3>    m_vertices;
-    std::vector<float3>    m_normals;
     std::vector<int3>      m_face_indices;
+    std::vector<float3>    m_normals;
     std::vector<Triangle>  m_faces;
     std::vector<float3>    m_centroids;
 

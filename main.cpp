@@ -53,13 +53,15 @@ int main()
 {
     int width  = 1024;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
 
     std::string filename = "sponza.ply";
     Mesh mesh = read_ply(filename.c_str());
+
+    float ao_sigma = 0.1f;
 
     bool verbose = true;
 
@@ -131,7 +133,6 @@ int main()
             //Hit hit = mesh.intersect(r);
 
 
-
             if (verbose)
             #pragma omp critical
             {
@@ -200,7 +201,6 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 5e-1f;
                     float t_max = 1e10f;
                     //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     Hit ao_hit = bvh.intersect(ao_r, t_max);

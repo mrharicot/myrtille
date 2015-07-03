@@ -33,9 +33,8 @@ Hit Mesh::intersect(const ray &r, float t_min, float t_max)
 
 Mesh read_ply(const char* file_path)
 {
-    enum Read_mode {ASCII, BINARY};
+    enum Read_mode {ASCII, BINARY, ELSE};
 
-    Mesh mesh;
     std::vector<float3> vertices;
     std::vector<float3> normals;
     std::vector<int3>   faces;
@@ -52,7 +51,7 @@ Mesh read_ply(const char* file_path)
     {
         std::cout << "File is not ply" << std::endl;
         file.close();
-        return mesh;
+        return Mesh();
     }
 
     std::getline(file, line);
@@ -65,6 +64,13 @@ Mesh read_ply(const char* file_path)
     {
         read_mode = BINARY;
     }
+    else
+    {
+        read_mode = ELSE;
+    }
+
+    if (read_mode == ASCII || read_mode == ELSE)
+        return Mesh();
 
     int nb_verts = 0;
     int nb_faces = 0;

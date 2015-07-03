@@ -150,11 +150,9 @@ std::pair<int, int> BVH::choose_split(int start_index, int end_index)
 {
     std::pair<float, int> best_split(1e32f, -1);
     int best_axis = -1;
-    const char* axes = "xyz";
     for (int i = 0; i < 3; ++i)
     {
         auto current_split = sah_cost(start_index, end_index, i);
-        //std::cout << axes[i] << " split: " << current_split.first << ", " << current_split.second << std::endl;
         if (current_split.first < best_split.first)
         {
             best_split = current_split;
@@ -223,7 +221,6 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
 
         sort(start_index, end_index, best_split.second);
 
-        const char* axes = "xyz";
         //std::cout << "splitting: " << axes[best_split.second] << " | " << std::flush;
 
         AABB left_aabb  = compute_face_bb(start_index, split_index);
