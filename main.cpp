@@ -53,7 +53,7 @@ int main()
 {
     int width  = 1024;
     int height = width;
-    int nb_ao_samples = 32;
+    int nb_ao_samples = 16;
 
     std::vector<float3> image;
     image.resize(height * width);
@@ -70,20 +70,20 @@ int main()
 
     //Camera camera();
 
-    float fov   = 39.3076f * pi / 180.0f;
-    //float fov   = 60.0f * pi / 180.0f;
+    //float fov   = 39.3076f * pi / 180.0f;
+    float fov   = 60.0f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
     float3 origin;
 
     //origin = float3(0.278f, 0.273f, -0.8f);
     //origin = float3(0,0.1,0.1);
+    //origin = float3(0,0,-1);
 
     origin = float3(0.0f, 0.05f, 0.05f);
 
     int it_done = 0;
     int previous_percent = 0;
-
 
 
     //generate ao_samples
@@ -130,7 +130,20 @@ int main()
             Hit hit = bvh.intersect(r, t_max);
             //Hit hit = mesh.intersect(r);
 
-            it_done += 1;
+
+
+            if (verbose)
+            #pragma omp critical
+            {
+                it_done += 1;
+
+                int percent_done = std::floor(100 * it_done / (height * width));
+                if (percent_done - previous_percent == 1 )
+                {
+                    std::cout << percent_done << "% done" << std::endl;
+                    previous_percent = percent_done;
+                }
+            }
 
             if (!hit)
             {
@@ -142,8 +155,8 @@ int main()
 
             float3 n = mesh.face_normal(hit.face_id, p);
 
-#define DO_AO
-#ifdef DO_AO
+#define DO_AO 1
+#if DO_AO
 
 
             bool zup = std::abs(n.z) < 0.9f;
@@ -187,7 +200,7 @@ int main()
 
                     ray ao_r(p + n * scene_epsilon, rv);
 
-                    float ao_sigma = 0.1f;
+                    float ao_sigma = 5e-1f;
                     float t_max = 1e10f;
                     //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
                     Hit ao_hit = bvh.intersect(ao_r, t_max);
@@ -212,17 +225,6 @@ int main()
 
 
             image.at(i * width + j) = out;
-
-            if (verbose)
-            #pragma omp critical
-            {
-                int percent_done = std::floor(100 * it_done / (height * width));
-                if (percent_done - previous_percent == 1 )
-                {
-                    std::cout << percent_done << "% done" << std::endl;
-                    previous_percent = percent_done;
-                }
-            }
 
         }
 

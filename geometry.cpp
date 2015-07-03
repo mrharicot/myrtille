@@ -2,7 +2,7 @@
 
 #include "geometry.h"
 
-#define EPSILON 1e-8f
+#define EPSILON 1e-10f
 
 
 //from wikipedia
@@ -66,37 +66,28 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
             return std::make_pair(false, 1e32f);
     }
 
-    float t_start = -1e32f;
-    float t_end   =  1e32f;
+    float3 t1((mini.x - r.origin.x) * r.inv_d.x,
+              (mini.y - r.origin.y) * r.inv_d.y,
+              (mini.z - r.origin.z) * r.inv_d.z);
+
+    float3 t2((maxi.x - r.origin.x) * r.inv_d.x,
+              (maxi.y - r.origin.y) * r.inv_d.y,
+              (maxi.z - r.origin.z) * r.inv_d.z);
+
     for (int i = 0; i < 3; ++i)
     {
-        float t1 = (mini.data[i] - r.origin.data[i]) * r.inv_d.data[i];
-        float t2 = (maxi.data[i] - r.origin.data[i]) * r.inv_d.data[i];
-
-        if (t1 > t2)
-            std::swap(t1, t2);
-
-        if (t1 > t_start)
-            t_start = t1;
-
-        if (t2 < t_end)
-            t_end = t2;
+        if (t1.data[i] > t2.data[i])
+            std::swap(t1.data[i], t2.data[i]);
     }
 
-    if (t_start > t_end)
-        return std::make_pair(false, 1e32f);
-
+    float t_end   = std::min(std::min(t2.x, t2.y), t2.z);
     if (t_end < t_min)
         return std::make_pair(false, 1e32f);
 
-    if (t_start > t_min)
-    {
-        return std::make_pair(true, t_start);
-    }
-    else
-    {
-        //std::cout << "aabb intersection inside" << std::endl;
-        return std::make_pair(true, t_end);
-    }
+    float t_start = std::max(std::max(t1.x, t1.y), t1.z);
+    if (t_start > t_end)
+        return std::make_pair(false, 1e32f);
+
+    return std::make_pair(true, t_start);
 }
 
