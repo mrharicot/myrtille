@@ -194,52 +194,48 @@ std::pair<float, int> BVH::sah_cost(int start_index, int end_index, int axis)
     sort(start_index, end_index, axis);
 
     int nb_faces = end_index - start_index;
-//    std::vector<float>  left_surfaces(nb_faces);
-//    std::vector<float> right_surfaces(nb_faces);
+    std::vector<float>  left_surfaces(nb_faces);
+    std::vector<float> right_surfaces(nb_faces);
 
-//    AABB left_aabb = m_mesh->face(m_indices[start_index]).bb();
-//    left_surfaces[0] = left_aabb.surface();
+    AABB left_aabb = m_mesh->face(m_indices[start_index]).bb();
+    left_surfaces[0] = left_aabb.surface();
 
-//    AABB right_aabb = m_mesh->face(m_indices[end_index - 1]).bb();
-//    right_surfaces[0] = right_aabb.surface();
+    AABB right_aabb = m_mesh->face(m_indices[end_index - 1]).bb();
+    right_surfaces[nb_faces - 1] = right_aabb.surface();
 
-//    for (int i = 1; i < nb_faces; ++i)
-//    {
-//        AABB face_aabb = m_mesh->face(m_indices[start_index + i]).bb();
-//        left_aabb.extend(face_aabb);
+    for (int i = 1; i < nb_faces; ++i)
+    {
+        AABB face_aabb = m_mesh->face(m_indices[start_index + i]).bb();
+        left_aabb.extend(face_aabb);
 
-//        face_aabb = m_mesh->face(m_indices[end_index - 1 - i]).bb();
-//        right_aabb.extend(face_aabb);
+        face_aabb = m_mesh->face(m_indices[end_index - 1 - i]).bb();
+        right_aabb.extend(face_aabb);
 
-//        left_surfaces[i]  =  left_aabb.surface();
-//        right_surfaces[i] = right_aabb.surface();
-//    }
+        left_surfaces[i]  =  left_aabb.surface();
+        right_surfaces[nb_faces - 1 - i] = right_aabb.surface();
+    }
 
-//    float min_cost = 1e32f;
-//    float min_id   = -1;
+    float min_cost = 1e32f;
+    float min_id   = -1;
 
-//    for (int i = 1; i < nb_faces; ++i)
-//    {
-//        float current_cost = left_surfaces[i] * i + right_surfaces[nb_faces - i] * (nb_faces - i);
-//        if (current_cost < min_cost)
-//        {
-//            min_id   = i;
-//            min_cost = current_cost;
-//        }
-//    }
+    for (int i = 0; i < nb_faces - 1; ++i)
+    {
+        float current_cost = left_surfaces[i] * (i + 1) + right_surfaces[i] * (nb_faces - 1 - i);
+        if (current_cost < min_cost)
+        {
+            min_id   = i + 1;
+            min_cost = current_cost;
+        }
+    }
 
-
-    //int max_index = std::distance(sah_costs.begin(), std::max_element(sah_costs.begin(), sah_costs.end()));
-
-    //return std::make_pair(sah_costs[max_index], start_index + max_index + 1);
+    return std::make_pair(min_cost, start_index + min_id);
 
 
-    int split_index = nb_faces / 2;
+//    int split_index = nb_faces / 2;
 
-    float cost = compute_face_bb(start_index, start_index + split_index).surface() * (split_index) +
-                 compute_face_bb(start_index + split_index, end_index).surface() * (nb_faces - split_index);
-    return std::make_pair(cost, start_index + split_index);
-    //return std::make_pair(min_cost, start_index + min_id);
+//    float cost = compute_face_bb(start_index, start_index + split_index).surface() * (split_index) +
+//                 compute_face_bb(start_index + split_index, end_index).surface() * (nb_faces - split_index);
+//    return std::make_pair(cost, start_index + split_index);
 }
 
 void BVH::build_tree(int current_node, int start_index, int end_index)
@@ -261,9 +257,9 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
         //std::cout << " l, s, r: " << start_index << ", " << split_index << ", " << end_index << std::endl;
 
 
-        //int left_index = __sync_fetch_and_add(&nb_nodes, 2);
-        int left_index = nb_nodes;
-        nb_nodes += 2;
+        int left_index = __sync_fetch_and_add(&nb_nodes, 2);
+        //int left_index = nb_nodes;
+       // nb_nodes += 2;
 
         m_nodes[left_index    ] = Node(left_aabb,  -1, -1);
         m_nodes[left_index + 1] = Node(right_aabb, -1, -1);
@@ -273,7 +269,7 @@ void BVH::build_tree(int current_node, int start_index, int end_index)
         m_nodes[current_node].right = left_index + 1;
 
 
-        if (0)//(end_index - start_index > m_mesh->nb_faces() / 12)
+        if (end_index - start_index > m_mesh->nb_faces() / 12)
         {
             auto left = std::async(std::launch::async, [&]() {
                   return build_tree(left_index    , start_index, split_index);

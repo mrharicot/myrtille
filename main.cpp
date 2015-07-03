@@ -51,9 +51,9 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 512;
+    int width  = 1024;
     int height = width;
-    int nb_ao_samples = 8;
+    int nb_ao_samples = 32;
 
     std::vector<float3> image;
     image.resize(height * width);
@@ -142,7 +142,8 @@ int main()
 
             float3 n = mesh.face_normal(hit.face_id, p);
 
-
+#define DO_AO
+#ifdef DO_AO
 
 
             bool zup = std::abs(n.z) < 0.9f;
@@ -199,12 +200,17 @@ int main()
 
             ao_value /= (nb_ao_samples * nb_ao_samples);
 
+            float3 pixel_value = float3(1.0f - ao_value);
 
 
+#else
 
-            float dp = std::max(-r.direction.dot(n), 0.0f);
-            float3 out(1.0f - ao_value);
-            //float3 out(dp);
+            float3 pixel_value = float3(std::max(-r.direction.dot(n), 0.0f));
+
+#endif
+            float3 out(pixel_value);
+
+
             image.at(i * width + j) = out;
 
             if (verbose)
@@ -232,7 +238,7 @@ int main()
 
     std::cout << "converting to png" << std::endl;
 
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 }
