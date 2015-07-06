@@ -66,5 +66,6 @@ private:
 };
 
 Mesh read_ply(const char* file_path);
+Mesh read_obj(const char* file_path);
 
 #endif

@@ -17,6 +17,15 @@ struct int3
     union { struct { int x, y, z; }; int data[3]; };
 };
 
+struct float2
+{
+    float2() {}
+    float2(float s) : x(s), y(s) {}
+    float2(float x, float y) : x(x), y(y) {}
+    float2(const float* p) { x = p[0]; y = p[1]; }
+    union { struct { float x; float y; }; float data[2]; };
+};
+
 struct float3
 {
     float3() {}

@@ -160,3 +160,74 @@ Mesh read_ply(const char* file_path)
     return Mesh(vertices, faces, normals, has_normals);
 
 }
+
+Mesh read_obj(const char* file_path)
+{
+    std::vector<float3> vertices;
+    std::vector<float2> texture_coordinates;
+    std::vector<float3> normals;
+    std::vector<int3>   faces;
+
+    std::ifstream file(file_path, std::ifstream::in);
+
+    std::string line;
+    std::vector<std::string> tokens;
+
+    while (std::getline(file, line))
+    {
+        tokens = split_whitespaces(line);
+        if (tokens.size() == 0)
+            continue;
+
+        if (tokens[0] == "#")
+            std::cout << "comment" << std::endl;
+
+        if (tokens[0] == "v")
+        {
+            float3 v(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+            vertices.push_back(v);
+        }
+
+        if (tokens[0] == "vt")
+        {
+            float2 uv(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()));
+            texture_coordinates.push_back(uv);
+        }
+
+        if (tokens[0] == "vn")
+        {
+            float3 n(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+            normals.push_back(n);
+        }
+
+        if (tokens[0] == "f")
+        {
+            std::vector<std::string> split_token = split(tokens[1], '/');
+            int nb_face_params = split_token.size();
+            int nb_vertices    = tokens.size() - 1;
+
+            bool has_normals = nb_face_params == 3;
+            bool has_uv      = nb_face_params == 2 || (nb_face_params == 3 && split_token[1] != "");
+
+            if (!has_normals && !has_uv)
+            {
+                int3 idx(std::atoi(tokens[1].c_str()), std::atoi(tokens[2].c_str()), std::atoi(tokens[3].c_str()));
+                faces.push_back(idx);
+            }
+
+
+            if (tokens.size() == 5)
+            {
+                std::cout << "quad" << std::endl;
+            }
+            else if (tokens.size() == 4)
+            {
+                std::cout << "triangle" << std::endl;
+            }
+        }
+    }
+
+    std::cout << vertices.size() << " vertices" << std::endl;
+
+    return Mesh();
+}

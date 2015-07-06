@@ -51,14 +51,22 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
+
+
+
+    Mesh mesh = read_obj("sponza.obj");
+
+    return 0;
+
+    /*
     int width  = 1024;
     int height = width;
-    int nb_ao_samples = 8;
+    int nb_ao_samples = 32;
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "sponza.ply";
+    std::string filename = "hairball.ply";
     Mesh mesh = read_ply(filename.c_str());
 
     float ao_sigma = 0.1f;
@@ -80,9 +88,9 @@ int main()
 
     //origin = float3(0.278f, 0.273f, -0.8f);
     //origin = float3(0,0.1,0.1);
-    //origin = float3(0,0,-1);
+    origin = float3(0,0,-1);
 
-    origin = float3(0.0f, 0.05f, 0.05f);
+    //origin = float3(0.0f, 0.05f, 0.05f);
 
     int it_done = 0;
     int previous_percent = 0;
@@ -243,4 +251,5 @@ int main()
     //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
+    */
 }
