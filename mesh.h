@@ -6,6 +6,12 @@
 #include "math_tools.h"
 #include "geometry.h"
 
+struct Face {
+    Face() : v_id(-1), n_id(-1), t_id(-1) {}
+    Face(int3 v, int3 n, int3 t) : v_id(v), n_id(n), t_id(t) {}
+    int3 v_id, n_id, t_id;
+};
+
 class Mesh {
 public:
     Mesh() {}

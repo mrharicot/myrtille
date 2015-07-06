@@ -166,7 +166,7 @@ Mesh read_obj(const char* file_path)
     std::vector<float3> vertices;
     std::vector<float2> texture_coordinates;
     std::vector<float3> normals;
-    std::vector<int3>   faces;
+    std::vector<Face>   faces;
 
     std::ifstream file(file_path, std::ifstream::in);
 
@@ -204,30 +204,84 @@ Mesh read_obj(const char* file_path)
         {
             std::vector<std::string> split_token = split(tokens[1], '/');
             int nb_face_params = split_token.size();
-            int nb_vertices    = tokens.size() - 1;
+            int nb_face_vertices    = tokens.size() - 1;
 
             bool has_normals = nb_face_params == 3;
             bool has_uv      = nb_face_params == 2 || (nb_face_params == 3 && split_token[1] != "");
 
+
+            //std::cout << line << std::endl;
+            std::vector<int> indices;
+            std::vector<std::string> index_string;
+            for (int i = 0; i < nb_face_vertices; ++i)
+            {
+                index_string = split(tokens[i + 1], '/');
+                for (size_t j = 0; j < index_string.size(); ++j)
+                {
+                    //std::cout << index_string[j] << std::endl;
+                    if (!index_string[j].empty())
+                        indices.push_back(std::atoi(index_string[j].c_str()));
+                }
+            }
+
+            Face face, face2;
+
+            bool is_quad = nb_face_vertices == 4;
+
             if (!has_normals && !has_uv)
             {
-                int3 idx(std::atoi(tokens[1].c_str()), std::atoi(tokens[2].c_str()), std::atoi(tokens[3].c_str()));
-                faces.push_back(idx);
+                face.v_id = int3(indices[0], indices[1], indices[2]);
+
+                if (is_quad)
+                {
+                    face2.v_id = int3(indices[2], indices[3], indices[0]);
+                }
+            }
+            else if (!has_normals && has_uv)
+            {
+                face.v_id = int3(indices[0], indices[2], indices[4]);
+                face.t_id = int3(indices[1], indices[3], indices[5]);
+
+                if (is_quad)
+                {
+                    face2.v_id = int3(indices[2], indices[4], indices[5]);
+                    face2.t_id = int3(indices[3], indices[5], indices[7]);
+                }
+            }
+            else if (has_normals && !has_uv)
+            {
+                face.v_id = int3(indices[0], indices[2], indices[4]);
+                face.n_id = int3(indices[1], indices[3], indices[5]);
+
+                if (is_quad)
+                {
+                    face2.v_id = int3(indices[2], indices[4], indices[5]);
+                    face2.n_id = int3(indices[3], indices[5], indices[7]);
+                }
+            }
+            else
+            {
+                face.v_id = int3(indices[0], indices[3], indices[6]);
+                face.t_id = int3(indices[1], indices[4], indices[7]);
+                face.n_id = int3(indices[2], indices[5], indices[8]);
+
+                if (is_quad)
+                {
+                    face2.v_id = int3(indices[3], indices[6], indices[9]);
+                    face2.t_id = int3(indices[4], indices[7], indices[10]);
+                    face2.n_id = int3(indices[5], indices[8], indices[11]);
+                }
             }
 
+            faces.push_back(face);
 
-            if (tokens.size() == 5)
-            {
-                std::cout << "quad" << std::endl;
-            }
-            else if (tokens.size() == 4)
-            {
-                std::cout << "triangle" << std::endl;
-            }
+            if (is_quad)
+                faces.push_back(face2);
         }
     }
 
     std::cout << vertices.size() << " vertices" << std::endl;
+    std::cout << faces.size()    << " faces" << std::endl;
 
     return Mesh();
 }
