@@ -228,7 +228,6 @@ Mesh read_obj(const char* file_path)
                 index_string = split(tokens[i + 1], '/');
                 for (size_t j = 0; j < index_string.size(); ++j)
                 {
-                    //std::cout << index_string[j] << std::endl;
                     if (!index_string[j].empty())
                         indices.push_back(std::atoi(index_string[j].c_str()) - 1);
                 }
@@ -292,7 +291,8 @@ Mesh read_obj(const char* file_path)
     }
 
     std::cout << vertices.size() << " vertices" << std::endl;
-    std::cout << faces.size()    << " faces" << std::endl;
+    std::cout << faces.size()    << " faces"    << std::endl;
+    std::cout << normals.size()  << " normals"  << std::endl;
 
     return Mesh(vertices, texture_coordinates, normals, faces);
 }

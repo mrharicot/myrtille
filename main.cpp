@@ -59,10 +59,10 @@ int main()
 
     int width  = 1024;
     int height = width;
-    int nb_ao_samples = 32;
+    int nb_ao_samples = 16;
 
     float scene_epsilon = 1e-3f;
-    float ao_sigma = 100.0f;
+    float ao_sigma = 1.0f;
 
     bool verbose = true;
 
@@ -71,7 +71,7 @@ int main()
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "sponza.obj";
+    std::string filename = "sanmiguel.obj";
     Mesh mesh = read_obj(filename.c_str());
 
 
@@ -91,7 +91,7 @@ int main()
 
     //origin = float3(0.278f, 0.273f, -0.8f);
     //origin = float3(0,0.1,0.1);
-    origin = float3(0,100.0,0);
+    origin = float3(-8,1,14);
 
     //origin = float3(0.0f, 0.05f, 0.05f);
 
