@@ -20,8 +20,8 @@ public:
     {
         for (size_t i = 0; i < m_faces.size(); ++i)
         {
-            int3 f_id = m_faces[i].v_id;
-            m_triangles.push_back(Triangle(m_vertices[f_id.x], m_vertices[f_id.y], m_vertices[f_id.z]));
+            int3 v_id = m_faces[i].v_id;
+            m_triangles.push_back(Triangle(m_vertices[v_id.x], m_vertices[v_id.y], m_vertices[v_id.z]));
             m_centroids.push_back(m_triangles[i].centroid());
         }
 

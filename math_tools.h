@@ -15,6 +15,8 @@ struct int3
     int3(int i) : x(i), y(i), z(i) {}
     int3(const int* p) { x = p[0]; y = p[1]; z = p[2]; }
     union { struct { int x, y, z; }; int data[3]; };
+
+    friend std::ostream& operator<<(std::ostream& os, const int3 &i);
 };
 
 struct float2
@@ -70,6 +72,11 @@ struct mat3f
     mat3f(float s) { for (int i = 0; i < 9; ++i) { data[i] = s; }; }
     float data[9]; //row major
 
+    inline float& operator()(int i, int j)
+    {
+        return data[3 * i + j];
+    }
+
     inline mat3f operator+(const mat3f& m) {
         mat3f out;
         for (int i = 0; i < 9; ++i)
@@ -99,7 +106,7 @@ struct mat3f
         float3 out(0.0f);
         for (int i = 0; i < 3; ++i)
             for (int j = 0; j < 3; ++j)
-                *(&out.x + i) += data[3 * i + j] * *(&f.x + j);
+                out.data[i] += data[3 * i + j] * f.data[j];
         return out;
     }
     inline mat3f dot(const mat3f& m) {

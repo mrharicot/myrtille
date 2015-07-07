@@ -211,11 +211,13 @@ Mesh read_obj(const char* file_path)
         if (tokens[0] == "f")
         {
             std::vector<std::string> split_token = split(tokens[1], '/');
-            int nb_face_params = split_token.size();
-            int nb_face_vertices    = tokens.size() - 1;
+            int nb_face_params   = split_token.size();
+            int nb_face_vertices = tokens.size() - 1;
 
             bool has_normals = nb_face_params == 3;
             bool has_uv      = nb_face_params == 2 || (nb_face_params == 3 && split_token[1] != "");
+
+
 
 
             //std::cout << line << std::endl;
@@ -228,7 +230,7 @@ Mesh read_obj(const char* file_path)
                 {
                     //std::cout << index_string[j] << std::endl;
                     if (!index_string[j].empty())
-                        indices.push_back(std::atoi(index_string[j].c_str()));
+                        indices.push_back(std::atoi(index_string[j].c_str()) - 1);
                 }
             }
 
@@ -252,8 +254,8 @@ Mesh read_obj(const char* file_path)
 
                 if (is_quad)
                 {
-                    face2.v_id = int3(indices[2], indices[4], indices[5]);
-                    face2.t_id = int3(indices[3], indices[5], indices[7]);
+                    face2.v_id = int3(indices[4], indices[6], indices[0]);
+                    face2.t_id = int3(indices[5], indices[7], indices[1]);
                 }
             }
             else if (has_normals && !has_uv)
@@ -263,8 +265,8 @@ Mesh read_obj(const char* file_path)
 
                 if (is_quad)
                 {
-                    face2.v_id = int3(indices[2], indices[4], indices[5]);
-                    face2.n_id = int3(indices[3], indices[5], indices[7]);
+                    face2.v_id = int3(indices[4], indices[6], indices[0]);
+                    face2.n_id = int3(indices[5], indices[7], indices[1]);
                 }
             }
             else
@@ -275,9 +277,9 @@ Mesh read_obj(const char* file_path)
 
                 if (is_quad)
                 {
-                    face2.v_id = int3(indices[3], indices[6], indices[9]);
-                    face2.t_id = int3(indices[4], indices[7], indices[10]);
-                    face2.n_id = int3(indices[5], indices[8], indices[11]);
+                    face2.v_id = int3(indices[6], indices[9],  indices[0]);
+                    face2.t_id = int3(indices[7], indices[10], indices[1]);
+                    face2.n_id = int3(indices[8], indices[11], indices[2]);
                 }
             }
 
@@ -285,11 +287,12 @@ Mesh read_obj(const char* file_path)
 
             if (is_quad)
                 faces.push_back(face2);
+
         }
     }
 
     std::cout << vertices.size() << " vertices" << std::endl;
     std::cout << faces.size()    << " faces" << std::endl;
 
-    return Mesh();
+    return Mesh(vertices, texture_coordinates, normals, faces);
 }

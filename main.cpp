@@ -54,24 +54,27 @@ int main()
 
 
 
-//    Mesh mesh = read_obj("sponza.obj");
-
-//    return 0;
+    //Mesh mesh = read_obj("sponza.obj");
 
 
     int width  = 1024;
     int height = width;
-    int nb_ao_samples = 8;
+    int nb_ao_samples = 32;
+
+    float scene_epsilon = 1e-3f;
+    float ao_sigma = 100.0f;
+
+    bool verbose = true;
+
+    #define DO_AO 1
 
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "hairball.ply";
-    Mesh mesh = read_ply(filename.c_str());
+    std::string filename = "sponza.obj";
+    Mesh mesh = read_obj(filename.c_str());
 
-    float ao_sigma = 0.1f;
 
-    bool verbose = true;
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -88,7 +91,7 @@ int main()
 
     //origin = float3(0.278f, 0.273f, -0.8f);
     //origin = float3(0,0.1,0.1);
-    origin = float3(0,0,-1);
+    origin = float3(0,100.0,0);
 
     //origin = float3(0.0f, 0.05f, 0.05f);
 
@@ -114,11 +117,16 @@ int main()
         pixel_offsets.push_back(std::generate_canonical<float, std::numeric_limits<float>::digits>(gen));
     }
 
-    float scene_epsilon = 1e-6f;
+
 
     Timer timer;
 
     BVH bvh(&mesh);
+
+    mat3f R(0.0f);
+    R(2,0) = -1.0f;
+    R(1,1) =  1.0f;
+    R(0,2) =  1.0f;
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
@@ -130,8 +138,10 @@ int main()
             float3 direction;
             direction.x = (j + 0.5f - 0.5f * width)  / focal;
             direction.y = (0.5f * height - i - 0.5f) / focal;
-            direction.z = 1.0f;
+            direction.z = -1.0f;
             direction.normalize();
+
+            direction = R.dot(direction);
 
             ray r(origin, direction);
 
@@ -164,7 +174,7 @@ int main()
 
             float3 n = mesh.face_normal(hit.face_id, p);
 
-#define DO_AO 1
+
 #if DO_AO
 
 
@@ -251,5 +261,6 @@ int main()
     //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
+
 
 }

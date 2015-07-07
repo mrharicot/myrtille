@@ -1,5 +1,11 @@
 #include "math_tools.h"
 
+std::ostream& operator<<(std::ostream& os, const int3 &i)
+{
+    os << i.x << ", " << i.y << ", " << i.z;
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const float3 &f)
 {
   os << f.x << ", " << f.y << ", " << f.z;
