@@ -54,14 +54,14 @@ int main()
 
 
 
-    Mesh mesh = read_obj("sponza.obj");
+//    Mesh mesh = read_obj("sponza.obj");
 
-    return 0;
+//    return 0;
 
-    /*
+
     int width  = 1024;
     int height = width;
-    int nb_ao_samples = 32;
+    int nb_ao_samples = 8;
 
     std::vector<float3> image;
     image.resize(height * width);
@@ -251,5 +251,5 @@ int main()
     //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
-    */
+
 }

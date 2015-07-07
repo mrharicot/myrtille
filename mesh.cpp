@@ -20,7 +20,7 @@ Hit Mesh::intersect(const ray &r, float t_min, float t_max)
     bool did_hit = false;
     for (int k = 0; k < nb_faces(); ++k)
     {
-        hit = m_faces[k].intersect(r);
+        hit = m_triangles[k].intersect(r);
         if (hit.first && hit.second < min_depth)
         {
             face_id = k;
@@ -36,8 +36,9 @@ Mesh read_ply(const char* file_path)
     enum Read_mode {ASCII, BINARY, ELSE};
 
     std::vector<float3> vertices;
+    std::vector<float2> tex_coords;
     std::vector<float3> normals;
-    std::vector<int3>   faces;
+    std::vector<Face>   faces;
 
     std::ifstream file(file_path, std::ifstream::in | std::ifstream::binary);
 
@@ -132,6 +133,8 @@ Mesh read_ply(const char* file_path)
         }
     }
 
+    //std::vector<Face> faces;
+
     //read faces
     for (int i = 0; i < nb_faces; ++i)
     {
@@ -146,7 +149,10 @@ Mesh read_ply(const char* file_path)
         int idxs[3];
         file.read((char*) &idxs[0], 3 * sizeof(int) / sizeof(char));
         //for (int j = 0; j < 3; ++j)
-        faces.push_back(&idxs[0]);
+
+        Face face(&idxs[0], -1, &idxs[0]);
+        //faces.push_back(&idxs[0]);
+        faces.push_back(face);
     }
 
     file.close();
@@ -157,7 +163,9 @@ Mesh read_ply(const char* file_path)
     //    mesh.set_vertices(vertices);
     //    mesh.set_normals(normals);
 
-    return Mesh(vertices, faces, normals, has_normals);
+    //return Mesh(vertices, faces, normals, has_normals);
+
+    return Mesh(vertices, tex_coords, normals, faces);
 
 }
 

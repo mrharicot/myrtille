@@ -100,7 +100,7 @@ Hit BVH::intersect_faces(ray &r, float &t_max, int start_index, int end_index)
     for (int ii = start_index; ii < end_index; ++ii)
     {
         int i = m_indices[ii];
-        auto trit = m_mesh->face(i).intersect(r);
+        auto trit = m_mesh->triangle(i).intersect(r);
         if (trit.first && trit.second < hit.t && trit.second < t_max)
         {
             hit.did_hit = true;
@@ -119,7 +119,7 @@ AABB BVH::compute_face_bb(int start_index, int end_index)
 
     for (int ii = start_index; ii < end_index; ++ii)
     {
-        auto t_bb = m_mesh->face(m_indices[ii]).bb();
+        auto t_bb = m_mesh->triangle(m_indices[ii]).bb();
         bb_min = min(bb_min, t_bb.mini);
         bb_max = max(bb_max, t_bb.maxi);
     }
@@ -170,18 +170,18 @@ std::pair<float, int> BVH::sah_cost(int start_index, int end_index, int axis)
     std::vector<float>  left_surfaces(nb_faces - 1);
     std::vector<float> right_surfaces(nb_faces - 1);
 
-    AABB left_aabb = m_mesh->face(m_indices[start_index]).bb();
+    AABB left_aabb = m_mesh->triangle(m_indices[start_index]).bb();
     left_surfaces[0] = left_aabb.surface();
 
-    AABB right_aabb = m_mesh->face(m_indices[end_index - 1]).bb();
+    AABB right_aabb = m_mesh->triangle(m_indices[end_index - 1]).bb();
     right_surfaces[0] = right_aabb.surface();
 
     for (int i = 1; i < nb_faces - 1; ++i)
     {
-        AABB face_aabb = m_mesh->face(m_indices[start_index + i]).bb();
+        AABB face_aabb = m_mesh->triangle(m_indices[start_index + i]).bb();
         left_aabb.extend(face_aabb);
 
-        face_aabb = m_mesh->face(m_indices[end_index - 1 - i]).bb();
+        face_aabb = m_mesh->triangle(m_indices[end_index - 1 - i]).bb();
         right_aabb.extend(face_aabb);
 
         left_surfaces[i]  =  left_aabb.surface();
