@@ -41,6 +41,7 @@ struct float3
     inline float3 operator-(float s) const { return float3(s - x, s - y, s - z); }
     inline float3 operator*(float s) const { return float3(s * x, s * y, s * z); }
     inline float3 operator/(float s) const { return float3(x / s, y / s, z / s); }
+    inline float3 operator^(float s) const { return float3(std::pow(x, s), std::pow(y, s), std::pow(z, s)); }
 
     inline float3 operator+(const float3& f) const { return float3(x + f.x, y + f.y, z + f.z); }
     inline float3 operator-(const float3& f) const { return float3(x - f.x, y - f.y, z - f.z); }

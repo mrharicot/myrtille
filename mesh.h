@@ -5,18 +5,21 @@
 
 #include "math_tools.h"
 #include "geometry.h"
+#include "material.h"
 
 struct Face {
-    Face() : v_id(-1), t_id(-1), n_id(-1) {}
-    Face(int3 v, int3 t, int3 n) : v_id(v), t_id(t), n_id(n)  {}
+    Face() : v_id(-1), t_id(-1), n_id(-1), m_id(-1) {}
+    Face(int3 v, int3 t, int3 n) : v_id(v), t_id(t), n_id(n), m_id(-1)  {}
+    Face(int3 v, int3 t, int3 n, int m) : v_id(v), t_id(t), n_id(n), m_id(m)  {}
     int3 v_id, t_id, n_id;
+    int  m_id;
 };
 
 class Mesh {
 public:
     Mesh() {}
-    inline Mesh(std::vector<float3> vertices, std::vector<float2> tex_coords, std::vector<float3> normals, std::vector<Face> faces)
-        : m_vertices(vertices), m_tex_coords(tex_coords), m_normals(normals), m_faces(faces)
+    inline Mesh(std::vector<float3> vertices, std::vector<float2> tex_coords, std::vector<float3> normals, std::vector<Face> faces, std::vector<Material> materials)
+        : m_vertices(vertices), m_tex_coords(tex_coords), m_normals(normals), m_faces(faces), m_materials(materials)
     {
         for (size_t i = 0; i < m_faces.size(); ++i)
         {
@@ -39,10 +42,12 @@ public:
     inline int nb_vertices(void) const  { return m_vertices.size();      }
     inline int nb_faces(void)    const  { return m_faces.size();  }
 
-    inline Face&   face(int i)          { return m_faces[i];      }
-    inline float3& normal(int i)        { return m_normals[i];    }
-    inline float3& vertex(int i)        { return m_vertices[i];   }
-    inline float3& centroid(int i)      { return m_centroids[i];  }
+    inline Face&     face(int i)          { return m_faces[i];      }
+    inline float3&   normal(int i)        { return m_normals[i];    }
+    inline float3&   vertex(int i)        { return m_vertices[i];   }
+    inline float3&   centroid(int i)      { return m_centroids[i];  }
+    inline Material& material(int i)      { return m_materials[i];  }
+    inline Material& face_material(int i) { return m_materials[m_faces[i].m_id]; }
 
     Hit intersect(const ray &r, float t_min = 0.0f, float t_max = 1e20f);
 
@@ -68,6 +73,8 @@ private:
 
     std::vector<Face>      m_faces;
 
+    std::vector<Material>  m_materials;
+
     std::vector<Triangle>  m_triangles;
     std::vector<float3>    m_centroids;
 
@@ -77,5 +84,6 @@ private:
 
 Mesh read_ply(const char* file_path);
 Mesh read_obj(const char* file_path);
+std::vector<Material> read_mtl(const char* file_path);
 
 #endif

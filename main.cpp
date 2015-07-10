@@ -62,7 +62,7 @@ int main()
     int nb_ao_samples = 16;
 
     float scene_epsilon = 1e-3f;
-    float ao_sigma = 1.0f;
+    float ao_sigma = 100.0f;
 
     bool verbose = true;
 
@@ -71,10 +71,8 @@ int main()
     std::vector<float3> image;
     image.resize(height * width);
 
-    std::string filename = "sanmiguel.obj";
+    std::string filename = "cornell_box.obj";
     Mesh mesh = read_obj(filename.c_str());
-
-
 
     //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
     // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
@@ -83,15 +81,15 @@ int main()
 
     //Camera camera();
 
-    //float fov   = 39.3076f * pi / 180.0f;
-    float fov   = 60.0f * pi / 180.0f;
+    float fov   = 39.3076f * pi / 180.0f;
+    //float fov   = 60.0f * pi / 180.0f;
     float focal = 0.5f * height / std::tan(0.5f * fov);
 
-    float3 origin;
+    float3 origin(0.0f);
 
-    //origin = float3(0.278f, 0.273f, -0.8f);
+    origin = float3(0.278f, 0.273f, -0.8f) * 1000.0f;
     //origin = float3(0,0.1,0.1);
-    origin = float3(-8,1,14);
+    //origin = float3(-8,1,14);
 
     //origin = float3(0.0f, 0.05f, 0.05f);
 
@@ -124,9 +122,9 @@ int main()
     BVH bvh(&mesh);
 
     mat3f R(0.0f);
-    R(2,0) = -1.0f;
+    R(0,0) = -1.0f;
     R(1,1) =  1.0f;
-    R(0,2) =  1.0f;
+    R(2,2) = -1.0f;
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
@@ -241,8 +239,10 @@ int main()
 #endif
             float3 out(pixel_value);
 
+            float3 face_color = mesh.face_material(hit.face_id).albedo;
 
-            image.at(i * width + j) = out;
+
+            image.at(i * width + j) = (out * face_color) ^ (1.0f / 2.2f);
 
         }
 

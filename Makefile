@@ -6,5 +6,21 @@ else
 	CC = g++
 endif
 
-all:
-		$(CC) -Wall -O3 -fopenmp -pthread -std=c++11 bvh.cpp geometry.cpp time_tools.cpp string_tools.cpp math_tools.cpp mesh.cpp camera.cpp main.cpp -o rt
+CFLAGS = -c -Wall -pedantic -O3 -std=c++11 -fopenmp -pthread
+LDFLAGS = -fopenmp
+
+SOURCES = material.cpp bvh.cpp geometry.cpp time_tools.cpp string_tools.cpp math_tools.cpp mesh.cpp camera.cpp main.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
+
+EXECUTABLE = rt
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+ 
+.cpp.o:
+	$(CC) $(CFLAGS) $< -o $@
+ 
+clean:
+	rm $(OBJECTS) $(EXECUTABLE)

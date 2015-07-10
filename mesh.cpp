@@ -35,10 +35,11 @@ Mesh read_ply(const char* file_path)
 {
     enum Read_mode {ASCII, BINARY, ELSE};
 
-    std::vector<float3> vertices;
-    std::vector<float2> tex_coords;
-    std::vector<float3> normals;
-    std::vector<Face>   faces;
+    std::vector<float3>   vertices;
+    std::vector<float2>   tex_coords;
+    std::vector<float3>   normals;
+    std::vector<Face>     faces;
+    std::vector<Material> materials;
 
     std::ifstream file(file_path, std::ifstream::in | std::ifstream::binary);
 
@@ -165,7 +166,7 @@ Mesh read_ply(const char* file_path)
 
     //return Mesh(vertices, faces, normals, has_normals);
 
-    return Mesh(vertices, tex_coords, normals, faces);
+    return Mesh(vertices, tex_coords, normals, faces, materials);
 
 }
 
@@ -181,6 +182,10 @@ Mesh read_obj(const char* file_path)
     std::string line;
     std::vector<std::string> tokens;
 
+    std::vector<Material> materials;
+
+    int current_material = -1;
+
     while (std::getline(file, line))
     {
         tokens = split_whitespaces(line);
@@ -189,6 +194,21 @@ Mesh read_obj(const char* file_path)
 
         if (tokens[0] == "#")
             std::cout << "comment" << std::endl;
+
+        if (tokens[0] == "mtllib")
+            materials = read_mtl(tokens[1].c_str());
+
+        if (tokens[0] == "usemtl")
+        {
+            for (int i = 0; i < materials.size(); ++i)
+            {
+                if (tokens[1] == materials[i].name)
+                {
+                    current_material = i;
+                    break;
+                }
+            }
+        }
 
         if (tokens[0] == "v")
         {
@@ -229,11 +249,24 @@ Mesh read_obj(const char* file_path)
                 for (size_t j = 0; j < index_string.size(); ++j)
                 {
                     if (!index_string[j].empty())
-                        indices.push_back(std::atoi(index_string[j].c_str()) - 1);
+                    {
+                        int c_idx = std::atoi(index_string[j].c_str());
+
+                        if (c_idx < 0)
+                        {
+                            indices.push_back(vertices.size() + c_idx);
+                        }
+                        else
+                        {
+                            indices.push_back(c_idx - 1);
+                        }
+                    }
                 }
             }
 
             Face face, face2;
+            face.m_id  = current_material;
+            face2.m_id = current_material;
 
             bool is_quad = nb_face_vertices == 4;
 
@@ -294,5 +327,47 @@ Mesh read_obj(const char* file_path)
     std::cout << faces.size()    << " faces"    << std::endl;
     std::cout << normals.size()  << " normals"  << std::endl;
 
-    return Mesh(vertices, texture_coordinates, normals, faces);
+    return Mesh(vertices, texture_coordinates, normals, faces, materials);
+}
+
+std::vector<Material> read_mtl(const char* file_path)
+{
+    std::vector<Material> materials;
+
+    std::ifstream file(file_path, std::ifstream::in);
+
+    std::string line;
+    std::vector<std::string> tokens;
+
+    Material current_material;
+
+    while (std::getline(file, line))
+    {
+        tokens = split_whitespaces(line);
+        if (tokens.size() == 0)
+            continue;
+
+        if (tokens[0] == "#")
+            std::cout << "comment" << std::endl;
+
+        if (tokens[0] == "newmtl")
+        {
+            if (current_material.name != "default")
+            {
+                std::cout << current_material << std::endl;
+                materials.push_back(current_material);
+                current_material = Material();
+            }
+            current_material.name = tokens[1];
+        }
+
+        if (tokens[0] == "Kd")
+            current_material.albedo = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+
+    }
+
+    std::cout << current_material << std::endl;
+    materials.push_back(current_material);
+
+    return materials;
 }

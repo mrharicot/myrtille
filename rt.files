@@ -18,3 +18,5 @@ time_tools.h
 time_tools.cpp
 bvh.h
 bvh.cpp
+material.h
+material.cpp
