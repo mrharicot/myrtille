@@ -57,16 +57,16 @@ int main()
     //Mesh mesh = read_obj("sponza.obj");
 
 
-    int width  = 1024;
+    int width  = 512;
     int height = width;
-    int nb_ao_samples = 16;
+    int nb_ao_samples = 8;
 
     float scene_epsilon = 1e-3f;
     float ao_sigma = 100.0f;
 
     bool verbose = true;
 
-    #define DO_AO 1
+    #define DO_AO 0
 
     std::vector<float3> image;
     image.resize(height * width);
@@ -128,7 +128,7 @@ int main()
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
-    #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
+    //#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
     for (int i = 0; i < height; ++i)
     {
         for (int j = 0; j < width; ++j)
@@ -234,12 +234,21 @@ int main()
 
 #else
 
-            float3 pixel_value = float3(std::max(-r.direction.dot(n), 0.0f));
+            int e_face_id = mesh.emissive_face_index(std::rand() % mesh.nb_emissive_faces());
+            //Face& light_face = mesh.face(e_face_id);
+            float3 light_point = mesh.triangle(e_face_id).sample_point(pixel_offsets[i * width * 2 + j * 2 + 0], pixel_offsets[i * width * 2 + j * 2 + 1]);
+            float3 pa = p + n * scene_epsilon;
+            float3 e_n = mesh.face_normal(e_face_id, light_point);
+            float3 pb = light_point + e_n * scene_epsilon;
+            bool viz = !bvh.visibility(pa, pb);
+
+            //float3 pixel_value = float3(std::max(-r.direction.dot(n), 0.0f));
+            float3 pixel_value((float) viz);
 
 #endif
             float3 out(pixel_value);
 
-            float3 face_color = mesh.face_material(hit.face_id).albedo;
+            float3 face_color = mesh.face_material(hit.face_id).color;
 
 
             image.at(i * width + j) = (out * face_color) ^ (1.0f / 2.2f);

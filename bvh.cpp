@@ -94,6 +94,64 @@ Hit BVH::intersect(ray &r, float &t_max)
     return best_hit;
 }
 
+bool BVH::visibility(float3 &pa, float3 &pb)
+{
+    float3 direction = pb - pa;
+    float t_max = direction.norm();
+    direction = direction / t_max;
+    ray r(pa, direction);
+    Hit best_hit = Hit(false, t_max, -1);
+
+    auto root_hit = m_nodes[0].aabb.intersect(r);
+    if (!root_hit.first)
+        return false;
+
+    std::vector<std::pair<int, float> > nodes_stack;
+    nodes_stack.reserve(256);
+    nodes_stack.push_back(std::make_pair(0, root_hit.second));
+
+    while (!nodes_stack.empty())
+    {
+        auto c_pair = nodes_stack[nodes_stack.size() - 1];
+
+        nodes_stack.pop_back();
+
+        if (c_pair.second >= t_max)
+            continue;
+
+        int    c_id = c_pair.first;
+        Node c_node = m_nodes[c_id];
+
+        if (c_node.is_leaf())
+        {
+            Hit faces_hit = intersect_faces(r, t_max, -c_node.left, -c_node.right);
+            if (faces_hit.did_hit)
+                return true;
+            continue;
+        }
+
+        auto  first_hit = m_nodes[ c_node.left].aabb.intersect(r);
+        auto second_hit = m_nodes[c_node.right].aabb.intersect(r);
+
+        int  first = c_node.left;
+        int second = c_node.right;
+
+        if (first_hit.first && second_hit.first && first_hit.second > second_hit.second)
+        {
+            std::swap(first,     second);
+            std::swap(first_hit, second_hit);
+        }
+
+        if (second_hit.second < t_max)
+            nodes_stack.push_back(std::make_pair(second, second_hit.second));
+
+        if (first_hit.second < t_max)
+            nodes_stack.push_back(std::make_pair(first, first_hit.second));
+    }
+
+    return false;
+}
+
 Hit BVH::intersect_faces(ray &r, float &t_max, int start_index, int end_index)
 {
     Hit hit(false, 1e32f, -1);

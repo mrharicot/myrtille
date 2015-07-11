@@ -39,6 +39,7 @@ Mesh read_ply(const char* file_path)
     std::vector<float2>   tex_coords;
     std::vector<float3>   normals;
     std::vector<Face>     faces;
+    std::vector<int>      e_faces_indices;
     std::vector<Material> materials;
 
     std::ifstream file(file_path, std::ifstream::in | std::ifstream::binary);
@@ -166,7 +167,7 @@ Mesh read_ply(const char* file_path)
 
     //return Mesh(vertices, faces, normals, has_normals);
 
-    return Mesh(vertices, tex_coords, normals, faces, materials);
+    return Mesh(vertices, tex_coords, normals, faces, e_faces_indices, materials);
 
 }
 
@@ -176,6 +177,7 @@ Mesh read_obj(const char* file_path)
     std::vector<float2> texture_coordinates;
     std::vector<float3> normals;
     std::vector<Face>   faces;
+    std::vector<int>    e_faces_indices;
 
     std::ifstream file(file_path, std::ifstream::in);
 
@@ -320,6 +322,14 @@ Mesh read_obj(const char* file_path)
             if (is_quad)
                 faces.push_back(face2);
 
+            if (materials[face.m_id].is_emissive())
+            {
+                e_faces_indices.push_back(faces.size() - 1);
+
+                if (is_quad)
+                    e_faces_indices.push_back(faces.size() - 2);
+            }
+
         }
     }
 
@@ -327,7 +337,7 @@ Mesh read_obj(const char* file_path)
     std::cout << faces.size()    << " faces"    << std::endl;
     std::cout << normals.size()  << " normals"  << std::endl;
 
-    return Mesh(vertices, texture_coordinates, normals, faces, materials);
+    return Mesh(vertices, texture_coordinates, normals, faces, e_faces_indices, materials);
 }
 
 std::vector<Material> read_mtl(const char* file_path)
@@ -361,8 +371,11 @@ std::vector<Material> read_mtl(const char* file_path)
             current_material.name = tokens[1];
         }
 
+        if (tokens[0] == "i")
+            current_material.emission = std::atof(tokens[1].c_str());
+
         if (tokens[0] == "Kd")
-            current_material.albedo = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+            current_material.color = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
 
     }
 

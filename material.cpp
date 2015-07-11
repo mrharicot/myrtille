@@ -3,5 +3,5 @@
 
 std::ostream& operator<<(std::ostream& os, const Material &m)
 {
-    os << "material: " << m.name << " | Ka: " << m.albedo;
+    os << "material: " << m.name << " | Ka: " << m.color;
 }

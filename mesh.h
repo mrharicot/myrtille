@@ -18,8 +18,8 @@ struct Face {
 class Mesh {
 public:
     Mesh() {}
-    inline Mesh(std::vector<float3> vertices, std::vector<float2> tex_coords, std::vector<float3> normals, std::vector<Face> faces, std::vector<Material> materials)
-        : m_vertices(vertices), m_tex_coords(tex_coords), m_normals(normals), m_faces(faces), m_materials(materials)
+    inline Mesh(std::vector<float3> vertices, std::vector<float2> tex_coords, std::vector<float3> normals, std::vector<Face> faces, std::vector<int> e_faces, std::vector<Material> materials)
+        : m_vertices(vertices), m_tex_coords(tex_coords), m_normals(normals), m_faces(faces), m_e_faces_indices(e_faces), m_materials(materials)
     {
         for (size_t i = 0; i < m_faces.size(); ++i)
         {
@@ -35,14 +35,18 @@ public:
     //void set_face_indices(std::vector<int> face_indices) {m_face_indices = face_indices;}
 
     inline const Triangle&              triangle(int i) const { return m_triangles[i]; }
+    inline       Triangle&              triangle(int i)       { return m_triangles[i]; }
     inline       std::vector<Triangle>& triangles()       { return m_triangles;    }
     inline       std::vector<Face>&     faces()           { return m_faces; }
     //inline const std::vector<Triangle>& faces() const { return m_faces; }
 
     inline int nb_vertices(void) const  { return m_vertices.size();      }
     inline int nb_faces(void)    const  { return m_faces.size();  }
+    inline int nb_emissive_faces(void)    const  { return m_e_faces_indices.size();  }
 
     inline Face&     face(int i)          { return m_faces[i];      }
+    inline Face& emissive_face(int i)     { return m_faces[m_e_faces_indices[i]]; }
+    inline int   emissive_face_index(int i) { return m_e_faces_indices[i]; }
     inline float3&   normal(int i)        { return m_normals[i];    }
     inline float3&   vertex(int i)        { return m_vertices[i];   }
     inline float3&   centroid(int i)      { return m_centroids[i];  }
@@ -72,6 +76,7 @@ private:
     std::vector<float3>    m_normals;
 
     std::vector<Face>      m_faces;
+    std::vector<int>       m_e_faces_indices;
 
     std::vector<Material>  m_materials;
 

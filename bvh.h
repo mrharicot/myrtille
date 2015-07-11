@@ -44,6 +44,7 @@ public:
     BVH(Mesh *mesh);
 
     Hit intersect(ray &r, float &t_max);
+    bool visibility(float3 &pa, float3 &pb);
 
     inline Node&              node(int i)   { return m_nodes[i]; }
     inline std::vector<Node>& nodes(void)   { return m_nodes;    }

@@ -16,12 +16,14 @@ struct Light
 class Material
 {
 public:
-    Material() : name("default"), albedo(1.0f) {}
-    Material(std::string name, float3 a) : name(name), albedo(a) {}
+    Material() : name("default"), color(1.0f) {}
+    Material(std::string name, float3 color, float emission = -1.0f) : name(name), color(color), emission(emission) {}
 
     std::string name;
-    float3 albedo;
+    float3 color;
     float emission;
+
+    inline bool is_emissive(void) { return emission > 0.0f; }
 
     friend std::ostream& operator<<(std::ostream& os, const Material &m);
 
