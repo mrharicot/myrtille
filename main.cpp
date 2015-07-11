@@ -258,7 +258,7 @@ int main()
 
     std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 

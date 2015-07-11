@@ -57,6 +57,11 @@ public:
     inline       AABB bb()       { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
     inline const AABB bb() const { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
 
+    inline float3 sample_point(float r1, float r2)
+    {
+        float sr1 = std::sqrt(r1);
+        return v0 * (1.0f - sr1) + v1 * (1.0f - r2) * sr1 + v2 * r2 * sr1;
+    }
 
     std::pair<bool, float> intersect(const ray &r) const;
     float3 barycentric_coords(float3 &p) const;

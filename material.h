@@ -3,6 +3,16 @@
 
 #include "math_tools.h"
 
+struct Light
+{
+    Light() : face_id(-1), color(1.0f), intensity(0.0f) {}
+    Light(int face_id, float3 color, float intensity) : face_id(face_id), color(color), intensity(intensity) {}
+
+    int    face_id;
+    float3 color;
+    float  intensity;
+};
+
 class Material
 {
 public:
@@ -11,8 +21,9 @@ public:
 
     std::string name;
     float3 albedo;
+    float emission;
 
-     friend std::ostream& operator<<(std::ostream& os, const Material &m);
+    friend std::ostream& operator<<(std::ostream& os, const Material &m);
 
 private:
 
