@@ -128,6 +128,8 @@ int main()
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
+    std::cout << mesh.nb_emissive_faces() << std::endl;
+
     //#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
     for (int i = 0; i < height; ++i)
     {
@@ -235,12 +237,18 @@ int main()
 #else
 
             int e_face_id = mesh.emissive_face_index(std::rand() % mesh.nb_emissive_faces());
+            //int e_face_id = mesh.emissive_face_index(0);
+            //int e_face_id = 6;
+
+            //std::cout << e_face_id << std::endl;
+
             //Face& light_face = mesh.face(e_face_id);
             float3 light_point = mesh.triangle(e_face_id).sample_point(pixel_offsets[i * width * 2 + j * 2 + 0], pixel_offsets[i * width * 2 + j * 2 + 1]);
             float3 pa = p + n * scene_epsilon;
             float3 e_n = mesh.face_normal(e_face_id, light_point);
             float3 pb = light_point + e_n * scene_epsilon;
             bool viz = !bvh.visibility(pa, pb);
+            float dp = (pb-pa).normalized().dot(n);
 
             //float3 pixel_value = float3(std::max(-r.direction.dot(n), 0.0f));
             float3 pixel_value((float) viz);
@@ -251,7 +259,7 @@ int main()
             float3 face_color = mesh.face_material(hit.face_id).color;
 
 
-            image.at(i * width + j) = (out * face_color) ^ (1.0f / 2.2f);
+            image.at(i * width + j) = (out * face_color * dp) ^ (1.0f / 2.2f);
 
         }
 
