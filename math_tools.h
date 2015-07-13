@@ -46,6 +46,17 @@ struct float3
     inline float3 operator+(const float3& f) const { return float3(x + f.x, y + f.y, z + f.z); }
     inline float3 operator-(const float3& f) const { return float3(x - f.x, y - f.y, z - f.z); }
     inline float3 operator*(const float3& f) const { return float3(x * f.x, y * f.y, z * f.z); }
+    inline float3 operator/(const float3& f) const { return float3(x / f.x, y / f.y, z / f.z); }
+
+    inline float3& operator+=(const float3& f) { x += f.x; y += f.y; z += f.z; return *this; }
+    inline float3& operator-=(const float3& f) { x -= f.x; y -= f.y; z -= f.z; return *this; }
+    inline float3& operator*=(const float3& f) { x *= f.x; y *= f.y; z *= f.z; return *this; }
+    inline float3& operator/=(const float3& f) { x /= f.x; y /= f.y; z /= f.z; return *this; }
+
+    inline float3& operator+=(const float f) { x += f; y += f; z += f; return *this; }
+    inline float3& operator-=(const float f) { x -= f; y -= f; z -= f; return *this; }
+    inline float3& operator*=(const float f) { x *= f; y *= f; z *= f; return *this; }
+    inline float3& operator/=(const float f) { x /= f; y /= f; z /= f; return *this; }
 
     inline float  dot(const float3& f)   const { return f.x * x + f.y * y + f.z * z; }
     inline float3 cross(const float3& f) const { return float3(y * f.z - z * f.y, z * f.x - x * f.z, x * f.y - y * f.x); }
@@ -84,18 +95,21 @@ struct mat3f
             out.data[i] = data[i] + m.data[i];
         return out;
     }
+
     inline mat3f operator*(const mat3f& m) {
         mat3f out;
         for (int i = 0; i < 9; ++i)
             out.data[i] = data[i] * m.data[i];
         return out;
     }
+
     inline mat3f operator+(float s) {
         mat3f out;
         for (int i = 0; i < 9; ++i)
             out.data[i] = data[i] + s;
         return out;
     }
+
     inline mat3f operator*(float s) {
         mat3f out;
         for (int i = 0; i < 9; ++i)
@@ -103,21 +117,22 @@ struct mat3f
         return out;
     }
 
-    inline float3 dot(const float3& f) {
+    inline float3 dot(float3& f) {
         float3 out(0.0f);
         for (int i = 0; i < 3; ++i)
             for (int j = 0; j < 3; ++j)
                 out.data[i] += data[3 * i + j] * f.data[j];
         return out;
     }
-    inline mat3f dot(const mat3f& m) {
-        mat3f out(0.0f);
-        for (int i = 0; i < 3; ++i)
-            for (int j = 0; j < 3; ++j)
-                for (int k = 0; k < 3; ++k)
-                    out.data[3 * i + j] = data[3 * i + k] * m.data[3 * k + j];
-        return out;
-    }
+
+//    inline mat3f dot(const mat3f& m) {
+//        mat3f out(0.0f);
+//        for (int i = 0; i < 3; ++i)
+//            for (int j = 0; j < 3; ++j)
+//                for (int k = 0; k < 3; ++k)
+//                    out.data[3 * i + j] = data[3 * i + k] * m.data[3 * k + j];
+//        return out;
+//    }
 
 };
 

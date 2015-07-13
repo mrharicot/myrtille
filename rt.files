@@ -20,3 +20,5 @@ bvh.h
 bvh.cpp
 material.h
 material.cpp
+sampler.h
+sampler.cpp

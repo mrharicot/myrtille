@@ -6,10 +6,10 @@ else
 	CC = g++
 endif
 
-CFLAGS = -c -Wall -pedantic -g3 -std=c++11 -fopenmp -pthread
+CFLAGS = -c -Wall -pedantic -O3 -std=c++11 -fopenmp -pthread
 LDFLAGS = -fopenmp
 
-SOURCES = material.cpp bvh.cpp geometry.cpp time_tools.cpp string_tools.cpp math_tools.cpp mesh.cpp camera.cpp main.cpp
+SOURCES =  renderer.cpp sampler.cpp material.cpp bvh.cpp geometry.cpp time_tools.cpp string_tools.cpp math_tools.cpp mesh.cpp camera.cpp main.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 EXECUTABLE = rt

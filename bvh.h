@@ -41,6 +41,7 @@ class BVH
     };
 
 public:
+    BVH() {};
     BVH(Mesh *mesh);
 
     Hit intersect(ray &r, float &t_max);

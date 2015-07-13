@@ -15,6 +15,8 @@
 #include "camera.h"
 #include "time_tools.h"
 #include "bvh.h"
+#include "sampler.h"
+#include "renderer.h"
 
 typedef unsigned char uchar;
 
@@ -51,39 +53,15 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-
-
-
-    //Mesh mesh = read_obj("sponza.obj");
-
-
-    int width  = 512;
+    int width  = 1024;
     int height = width;
-    int nb_ao_samples = 8;
-
-    float scene_epsilon = 1e-3f;
-    float ao_sigma = 100.0f;
-
-    bool verbose = true;
-
-    #define DO_AO 0
-
-    std::vector<float3> image;
-    image.resize(height * width);
+    int spp = 32;
 
     std::string filename = "cornell_box.obj";
     Mesh mesh = read_obj(filename.c_str());
 
-    //triangle t(float3(0.0f, 0.0f, -5.0f), float3(1.0f, 0.0f, -5.0f), float3(0.0f, 1.0f, -5.0f));
-    // ray r(float3(0.f, 0.f, 0.f), float3(0.0f, 0.0f, -1.0f));
-    //
-    // auto bob = t.intersect(r);
-
-    //Camera camera();
 
     float fov   = 39.3076f * pi / 180.0f;
-    //float fov   = 60.0f * pi / 180.0f;
-    float focal = 0.5f * height / std::tan(0.5f * fov);
 
     float3 origin(0.0f);
 
@@ -93,189 +71,32 @@ int main()
 
     //origin = float3(0.0f, 0.05f, 0.05f);
 
-    int it_done = 0;
-    int previous_percent = 0;
-
-
-    //generate ao_samples
-    std::vector<float> ao_samples;
-    ao_samples.reserve(nb_ao_samples * nb_ao_samples);
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    for (int i = 0; i < nb_ao_samples * nb_ao_samples * 2; ++i)
-    {
-        ao_samples.push_back(std::generate_canonical<float, std::numeric_limits<float>::digits>(gen));
-    }
-
-    std::vector<float> pixel_offsets;
-    pixel_offsets.reserve(width * height * 2);
-    for (int i = 0; i < width * height * 2; ++i)
-    {
-        pixel_offsets.push_back(std::generate_canonical<float, std::numeric_limits<float>::digits>(gen));
-    }
-
-
-
-    Timer timer;
-
-    BVH bvh(&mesh);
-
     mat3f R(0.0f);
     R(0,0) = -1.0f;
     R(1,1) =  1.0f;
     R(2,2) = -1.0f;
 
+    Camera camera(origin, R, fov);
+
+
+    Renderer renderer(height, width, spp, 1);
+    renderer.set_mesh(mesh);
+    renderer.set_camera(camera);
+
+    Timer timer;
+
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
-    std::cout << mesh.nb_emissive_faces() << std::endl;
-
-    //#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
-    for (int i = 0; i < height; ++i)
-    {
-        for (int j = 0; j < width; ++j)
-        {
-            float3 direction;
-            direction.x = (j + 0.5f - 0.5f * width)  / focal;
-            direction.y = (0.5f * height - i - 0.5f) / focal;
-            direction.z = -1.0f;
-            direction.normalize();
-
-            direction = R.dot(direction);
-
-            ray r(origin, direction);
-
-            float t_max = 1e10f;
-            //Hit hit = root.intersect(mesh.faces(), indices, r, t_max);
-            Hit hit = bvh.intersect(r, t_max);
-            //Hit hit = mesh.intersect(r);
-
-
-            if (verbose)
-            #pragma omp critical
-            {
-                it_done += 1;
-
-                int percent_done = std::floor(100 * it_done / (height * width));
-                if (percent_done - previous_percent == 1 )
-                {
-                    std::cout << percent_done << "% done" << std::endl;
-                    previous_percent = percent_done;
-                }
-            }
-
-            if (!hit)
-            {
-                image.at(i * width + j) = float(hit);
-                continue;
-            }
-
-            float3 p = r.origin + r.direction * hit.t;
-
-            float3 n = mesh.face_normal(hit.face_id, p);
-
-
-#if DO_AO
-
-
-            bool zup = std::abs(n.z) < 0.9f;
-
-            float3 upvec = zup ? float3(0.0f, 0.0f, 1.0f) : float3(1.0f ,0.0f ,0.0f);
-
-            float3 k = upvec.cross(n);
-            float ct = upvec.dot(n);
-            float st = k.norm();
-            k = k / st;
-
-            float ao_grid_step = 1.0f / nb_ao_samples;
-
-            float ao_value = 0.0f;
-
-            for (int ii = 0; ii < nb_ao_samples; ++ii)
-            {
-                for (int jj = 0; jj < nb_ao_samples; ++jj)
-                {
-                    float r1 = wrap(ao_grid_step * (ii + ao_samples[ii * nb_ao_samples * 2 + jj * 2 + 0]) + pixel_offsets[i * width * 2 + j * 2 + 0]);
-                    float r2 = wrap(ao_grid_step * (jj + ao_samples[ii * nb_ao_samples * 2 + jj * 2 + 1]) + pixel_offsets[i * width * 2 + j * 2 + 1]);
-
-                    float3 v;
-
-                    float sq = std::sqrt(1.0f - r2);
-
-                    if (zup)
-                    {
-                        v = float3(std::cos(2.0f * pi * r1) * sq,
-                                   std::sin(2.0f * pi * r1) * sq,
-                                   std::sqrt(r2));
-                    }
-                    else
-                    {
-                        v = float3(std::sqrt(r2),
-                                   std::cos(2.0f * pi * r1) * sq,
-                                   std::sin(2.0f * pi * r1) * sq);
-                    }
-
-                    float3 rv = v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
-
-                    ray ao_r(p + n * scene_epsilon, rv);
-
-                    float t_max = 1e10f;
-                    //Hit ao_hit = root.intersect(mesh.faces(), indices, ao_r, t_max);//, 0.0f, 3.0f * ao_sigma);
-                    Hit ao_hit = bvh.intersect(ao_r, t_max);
-                    if (ao_hit)
-                        ao_value += std::exp(-0.5f * ao_hit.t * ao_hit.t / (ao_sigma * ao_sigma));
-
-
-                }
-            }
-
-            ao_value /= (nb_ao_samples * nb_ao_samples);
-
-            float3 pixel_value = float3(1.0f - ao_value);
-
-
-#else
-
-            int e_face_id = mesh.emissive_face_index(std::rand() % mesh.nb_emissive_faces());
-            //int e_face_id = mesh.emissive_face_index(0);
-            //int e_face_id = 6;
-
-            //std::cout << e_face_id << std::endl;
-
-            //Face& light_face = mesh.face(e_face_id);
-            float3 light_point = mesh.triangle(e_face_id).sample_point(pixel_offsets[i * width * 2 + j * 2 + 0], pixel_offsets[i * width * 2 + j * 2 + 1]);
-            float3 pa = p + n * scene_epsilon;
-            float3 e_n = mesh.face_normal(e_face_id, light_point);
-            float3 pb = light_point + e_n * scene_epsilon;
-            bool viz = !bvh.visibility(pa, pb);
-            float dp = (pb-pa).normalized().dot(n);
-
-            //float3 pixel_value = float3(std::max(-r.direction.dot(n), 0.0f));
-            float3 pixel_value((float) viz);
-
-#endif
-            float3 out(pixel_value);
-
-            float3 face_color = mesh.face_material(hit.face_id).color;
-
-
-            image.at(i * width + j) = (out * face_color * dp) ^ (1.0f / 2.2f);
-
-        }
-
-    }
-
-
-
+    renderer.render();
 
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
 
-    write_ppm(image, height, width, std::string("out.ppm"));
+    write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
 
-    std::cout << "converting to png" << std::endl;
+    //std::cout << "converting to png" << std::endl;
 
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 
