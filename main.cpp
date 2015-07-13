@@ -53,9 +53,9 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 1024;
+    int width  = 512;
     int height = width;
-    int spp = 32;
+    int spp = 4;
 
     std::string filename = "cornell_box.obj";
     Mesh mesh = read_obj(filename.c_str());
@@ -94,9 +94,9 @@ int main()
 
     write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
 
-    //std::cout << "converting to png" << std::endl;
+    std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 

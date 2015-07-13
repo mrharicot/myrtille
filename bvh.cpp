@@ -100,7 +100,6 @@ bool BVH::visibility(float3 &pa, float3 &pb)
     float t_max = direction.norm();
     direction = direction / t_max;
     ray r(pa, direction);
-    Hit best_hit = Hit(false, t_max, -1);
 
     auto root_hit = m_nodes[0].aabb.intersect(r);
     if (!root_hit.first)
@@ -124,8 +123,8 @@ bool BVH::visibility(float3 &pa, float3 &pb)
 
         if (c_node.is_leaf())
         {
-            Hit faces_hit = intersect_faces(r, t_max, -c_node.left, -c_node.right);
-            if (faces_hit.did_hit)
+            bool faces_hit = intersect_faces_ea(r, t_max, -c_node.left, -c_node.right);
+            if (faces_hit)
                 return true;
             continue;
         }
@@ -168,6 +167,21 @@ Hit BVH::intersect_faces(ray &r, float &t_max, int start_index, int end_index)
         }
     }
     return hit;
+}
+
+bool BVH::intersect_faces_ea(ray &r, float &t_max, int start_index, int end_index)
+{
+    for (int ii = start_index; ii < end_index; ++ii)
+    {
+        int i = m_indices[ii];
+        auto trit = m_mesh->triangle(i).intersect(r);
+        if (trit.first && trit.second < t_max)
+        {
+            t_max = trit.second;
+            return true;
+        }
+    }
+    return false;
 }
 
 AABB BVH::compute_face_bb(int start_index, int end_index)

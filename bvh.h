@@ -65,7 +65,8 @@ private:
     std::pair<int, int>   choose_split(int start_index, int end_index);
     std::pair<float, int> sah_cost(int start_index, int end_index, int axis);
     void sort(int start_index, int end_index, int axis);
-    Hit  intersect_faces(ray &r, float &t_max, int start_index, int end_index);
+    Hit     intersect_faces(ray &r, float &t_max, int start_index, int end_index);
+    bool intersect_faces_ea(ray &r, float &t_max, int start_index, int end_index);
 };
 
 #endif // BVH_H
