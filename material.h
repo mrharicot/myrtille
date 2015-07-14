@@ -16,8 +16,8 @@ struct Light
 class Material
 {
 public:
-    Material() : name("default"), color(1.0f), emission(-1.0f) {}
-    Material(std::string name, float3 color, float emission = -1.0f) : name(name), color(color), emission(emission) {}
+    Material() : name("default"), color(1.0f), emission(0.0f) {}
+    Material(std::string name, float3 color, float emission = 0.0f) : name(name), color(color), emission(emission) {}
 
     std::string name;
     float3 color;

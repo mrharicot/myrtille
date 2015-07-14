@@ -26,6 +26,7 @@ public:
             int3 v_id = m_faces[i].v_id;
             m_triangles.push_back(Triangle(m_vertices[v_id.x], m_vertices[v_id.y], m_vertices[v_id.z]));
             m_centroids.push_back(m_triangles[i].centroid());
+                m_areas.push_back(m_triangles[i].area());
         }
 
     }
@@ -50,6 +51,7 @@ public:
     inline float3&   normal(int i)        { return m_normals[i];    }
     inline float3&   vertex(int i)        { return m_vertices[i];   }
     inline float3&   centroid(int i)      { return m_centroids[i];  }
+    inline float     area(int i)          { return m_areas[i];      }
     inline Material& material(int i)      { return m_materials[i];  }
     inline Material& face_material(int i) { return m_materials[m_faces[i].m_id]; }
 
@@ -82,6 +84,7 @@ private:
 
     std::vector<Triangle>  m_triangles;
     std::vector<float3>    m_centroids;
+    std::vector<float>     m_areas;
 
     bool has_normals;
 

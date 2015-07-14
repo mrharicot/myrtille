@@ -36,9 +36,9 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
         {
             float3 c = image.at(width * i + j);
             color out_c;
-            out_c.r = (uchar) std::round(c.x * 255);
-            out_c.g = (uchar) std::round(c.y * 255);
-            out_c.b = (uchar) std::round(c.z * 255);
+            out_c.r = (uchar) std::round(std::min(c.x, 1.0f) * 255);
+            out_c.g = (uchar) std::round(std::min(c.y, 1.0f) * 255);
+            out_c.b = (uchar) std::round(std::min(c.z, 1.0f) * 255);
             file.write((const char*) &out_c.r, sizeof(color));
             //std::cout << out_c.r << out_c.g << out_c.b << std::endl;
         }
@@ -55,7 +55,8 @@ int main()
 {
     int width  = 512;
     int height = width;
-    int spp = 4;
+    int spp = 32;
+    int path_depth = 4;
 
     std::string filename = "cornell_box.obj";
     Mesh mesh = read_obj(filename.c_str());
@@ -79,7 +80,7 @@ int main()
     Camera camera(origin, R, fov);
 
 
-    Renderer renderer(height, width, spp, 1);
+    Renderer renderer(height, width, spp, path_depth);
     renderer.set_mesh(mesh);
     renderer.set_camera(camera);
 
@@ -94,9 +95,9 @@ int main()
 
     write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
 
-    std::cout << "converting to png" << std::endl;
+    //std::cout << "converting to png" << std::endl;
 
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 

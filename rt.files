@@ -8,8 +8,6 @@ math_tools.cpp
 math_tools.h
 mesh.cpp
 mesh.h
-mesh.ply
-mesh_ascii.ply
 string_tools.cpp
 string_tools.h
 renderer.h

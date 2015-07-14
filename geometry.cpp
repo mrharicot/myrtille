@@ -91,3 +91,33 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
     return std::make_pair(true, t_start);
 }
 
+float3 sample_around_normal(float3 &n, float r1, float r2)
+{
+    bool zup = std::abs(n.z) < 0.9f;
+
+    float3 upvec = zup ? float3(0.0f, 0.0f, 1.0f) : float3(1.0f, 0.0f, 0.0f);
+
+    float3 k = upvec.cross(n);
+    float ct = upvec.dot(n);
+    float st = k.norm();
+    k /= st;
+
+    float sq = std::sqrt(1.0f - r2);
+
+    float3 v;
+    if (zup)
+    {
+        v = float3(std::cos(2.0f * pi * r1) * sq,
+                   std::sin(2.0f * pi * r1) * sq,
+                   std::sqrt(r2));
+    }
+    else
+    {
+        v = float3(std::sqrt(r2),
+                   std::cos(2.0f * pi * r1) * sq,
+                   std::sin(2.0f * pi * r1) * sq);
+    }
+
+    return v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
+}
+

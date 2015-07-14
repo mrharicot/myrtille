@@ -49,7 +49,7 @@ Hit BVH::intersect(ray &r, float &t_max)
         return best_hit;
 
     std::vector<std::pair<int, float> > nodes_stack;
-    nodes_stack.reserve(256);
+    nodes_stack.reserve(64);
     nodes_stack.push_back(std::make_pair(0, root_hit.second));
 
     while (!nodes_stack.empty())
@@ -94,19 +94,14 @@ Hit BVH::intersect(ray &r, float &t_max)
     return best_hit;
 }
 
-bool BVH::visibility(float3 &pa, float3 &pb)
+bool BVH::visibility(ray &r, float t_max)
 {
-    float3 direction = pb - pa;
-    float t_max = direction.norm();
-    direction = direction / t_max;
-    ray r(pa, direction);
-
     auto root_hit = m_nodes[0].aabb.intersect(r);
     if (!root_hit.first)
         return false;
 
     std::vector<std::pair<int, float> > nodes_stack;
-    nodes_stack.reserve(256);
+    nodes_stack.reserve(64);
     nodes_stack.push_back(std::make_pair(0, root_hit.second));
 
     while (!nodes_stack.empty())

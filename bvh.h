@@ -41,11 +41,11 @@ class BVH
     };
 
 public:
-    BVH() {};
+    BVH() {}
     BVH(Mesh *mesh);
 
-    Hit intersect(ray &r, float &t_max);
-    bool visibility(float3 &pa, float3 &pb);
+    Hit  intersect(ray &r, float &t_max);
+    bool visibility(ray &r, float t_max);
 
     inline Node&              node(int i)   { return m_nodes[i]; }
     inline std::vector<Node>& nodes(void)   { return m_nodes;    }

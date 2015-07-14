@@ -53,6 +53,8 @@ public:
     inline const float3 normal(void)   const { return (v1 - v0).cross(v2 - v0).normalized(); }
     inline const float3 centroid(void) const { return (v0 + v1 + v2) / 3.0f; }
 
+    inline float area(void) { return 0.5f * (v1 - v0).cross(v2 - v0).norm(); }
+
     //inline       AABB& bb()       { return m_bounding_box; }
     inline       AABB bb()       { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
     inline const AABB bb() const { return AABB(min(min(v0, v1), v2), max(max(v0, v1), v2)); }
@@ -113,5 +115,7 @@ struct Hit
 
     inline operator bool() const { return did_hit; }
 };
+
+float3 sample_around_normal(float3 &n, float r1, float r2);
 
 #endif

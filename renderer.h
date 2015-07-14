@@ -20,6 +20,7 @@ public:
     inline void set_mesh(Mesh &mesh)       { m_mesh = &mesh; m_bvh = BVH(m_mesh); }
 
     void render();
+    float3 sample_ray(ray r, int sp, int sample_id, int i, int j);
     std::vector<float3> &get_image() { return m_image; }
 
 private:
