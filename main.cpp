@@ -55,10 +55,11 @@ int main()
 {
     int width  = 512;
     int height = width;
-    int spp = 32;
-    int path_depth = 4;
+    int spp = 4;
+    spp *= spp;
+    int path_depth = 5;
 
-    std::string filename = "cornell_box.obj";
+    std::string filename = "cornell_bunny.obj";
     Mesh mesh = read_obj(filename.c_str());
 
 
@@ -95,9 +96,9 @@ int main()
 
     write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
 
-    //std::cout << "converting to png" << std::endl;
+    std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 

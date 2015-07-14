@@ -322,7 +322,7 @@ Mesh read_obj(const char* file_path)
             if (is_quad)
                 faces.push_back(face2);
 
-            if (materials[face.m_id].is_emissive())
+            if (materials[face.m_id].is_emissive)
             {
                 e_faces_indices.push_back(faces.size() - 1);
 
@@ -376,6 +376,15 @@ std::vector<Material> read_mtl(const char* file_path)
 
         if (tokens[0] == "Kd")
             current_material.color = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+
+        if (tokens[0] == "Ke")
+        {
+            current_material.emission = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+            if (current_material.emission.norm() > 0.0f)
+            {
+                current_material.is_emissive = true;
+            }
+        }
 
     }
 

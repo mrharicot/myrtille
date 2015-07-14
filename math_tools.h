@@ -68,8 +68,6 @@ struct float3
     inline float3 normalized(void) const { float s = this->norm(); return *this / s; }
 
     friend std::ostream& operator<<(std::ostream& os, const float3 &f);
-
-    //inline float* data(void) { return (&x); }
 };
 
 inline float3 max(float3 lhs, float3 rhs) { return float3(std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z)); }

@@ -10,11 +10,16 @@
 
 class Sampler
 {
+    enum Method {RANDOM, SOBOL};
 public:
     Sampler() {}
-    Sampler(int spp, int dim, int height, int width) : m_spp(spp), m_dim(dim), m_height(height), m_width(width) { generate_samples(); }
+    Sampler(int spp, int dim, int height, int width) : m_spp(spp), m_dim(dim), m_height(height), m_width(width) { generate_samples(RANDOM); }
 
-    void generate_samples();
+    void generate_samples(Method method);
+    void generate_samples_sobol();
+    void generate_samples_random();
+
+    void generate_offsets();
 
     inline float get(int n, int i, int j, int d)
     {

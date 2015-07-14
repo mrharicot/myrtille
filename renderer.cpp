@@ -16,30 +16,22 @@ void Renderer::render()
 
             for (int si = 0; si < m_spp; ++si)
             {
-                for (int sj = 0; sj < m_spp; ++sj)
-                {
-                    int sample_id = m_spp * si + sj;
+                float dx = m_sampler.get(si, i, j, 0);
+                float dy = m_sampler.get(si, i, j, 1);
 
-                    float dx = (si + m_sampler.get(sample_id, i, j, 0)) / m_spp;
-                    float dy = (sj + m_sampler.get(sample_id, i, j, 1)) / m_spp;
+                float3 direction;
+                direction.x = (j + dx - 0.5f * m_width)  / focal;
+                direction.y = (0.5f * m_height - i - dy) / focal;
+                direction.z = -1.0f;
+                direction.normalize();
 
-                    float3 direction;
-                    direction.x = (j + dx - 0.5f * m_width)  / focal;
-                    direction.y = (0.5f * m_height - i - dy) / focal;
-                    direction.z = -1.0f;
-                    direction.normalize();
+                direction = m_camera->orientation().dot(direction);
 
-                    direction = m_camera->orientation().dot(direction);
+                ray r(m_camera->position(), direction);
 
-                    ray r(m_camera->position(), direction);
+                float3 path_color = sample_ray(r, 0, si, i, j);
 
-
-                    int sp = 0;
-                    float3 path_color = sample_ray(r, sp, sample_id, i, j);
-
-                    color += path_color;// / path_cum_weight;
-
-                }
+                color += path_color;
             }
 
             if (m_verbose)
@@ -55,7 +47,7 @@ void Renderer::render()
                 }
             }
 
-            color /= m_spp * m_spp;
+            color /= m_spp;
 
             m_image.at(i * m_width + j) = color ^ (1.0f / 2.2f);
 
@@ -74,7 +66,6 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 
     float t_max = 1e10f;
     Hit hit = m_bvh.intersect(r, t_max);
-    //Hit hit = m_mesh->intersect(r);
 
     if (!hit)
     {
@@ -83,17 +74,18 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 
     if (sp == 0)
     {
-        out_color += m_mesh->face_material(hit.face_id).color * m_mesh->face_material(hit.face_id).emission;
+        out_color += m_mesh->face_material(hit.face_id).emission;
     }
 
     float3 p = r.origin + r.direction * hit.t;
 
     float3 n = m_mesh->face_normal(hit.face_id, p);
 
-    float r1_light = m_sampler.get(sample_id, i, j, 2 + 4 * sp + 0);
-    float r2_light = m_sampler.get(sample_id, i, j, 2 + 4 * sp + 1);
-    float  r1_path = m_sampler.get(sample_id, i, j, 2 + 4 * sp + 2);
-    float  r2_path = m_sampler.get(sample_id, i, j, 2 + 4 * sp + 3);
+    float r1_light = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 0);
+    float r2_light = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 1);
+    float  r1_path = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 2);
+    float  r2_path = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 3);
+
 
     int e_face_id = m_mesh->emissive_face_index((int) round((m_mesh->nb_emissive_faces() - 1) * r1_light));
 
@@ -101,7 +93,7 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
     float3 pa = p + n * m_scene_epsilon;
     float3 e_n = m_mesh->face_normal(e_face_id, light_point);
     float3 pb = light_point + e_n * m_scene_epsilon;
-    float3 light_color = m_mesh->face_material(e_face_id).color * m_mesh->face_material(e_face_id).emission;
+    float3 light_color = m_mesh->face_material(e_face_id).emission;
 
     float3 light_dir   = pb - pa;
     float light_t_max = light_dir.norm();
@@ -123,7 +115,12 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 
     float3 reflection_contribution = sample_ray(ray(pa, reflection_direction), sp + 1, sample_id, i, j) * face_color;
 
-    out_color += light_contribution + reflection_contribution;
+    out_color += light_contribution;
+
+    float  russian_roulette = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 4);
+
+    if (russian_roulette > 0.5f)
+        out_color += reflection_contribution * 2.0f;
 
     return out_color;
 
