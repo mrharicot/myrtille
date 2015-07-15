@@ -86,9 +86,12 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
     float  r1_path = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 2);
     float  r2_path = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 3);
 
+    int f_id = (int) std::min((int) floor(m_mesh->nb_emissive_faces() * r1_light), m_mesh->nb_emissive_faces() - 1);
 
-    int e_face_id = m_mesh->emissive_face_index((int) round((m_mesh->nb_emissive_faces() - 1) * r1_light));
+    int e_face_id = m_mesh->emissive_face_index(f_id);
 
+    r1_light -= f_id / (float) m_mesh->nb_emissive_faces();
+    r1_light *= m_mesh->nb_emissive_faces();
     float3 light_point = m_mesh->triangle(e_face_id).sample_point(r1_light, r2_light);
     float3 pa = p + n * m_scene_epsilon;
     float3 e_n = m_mesh->face_normal(e_face_id, light_point);

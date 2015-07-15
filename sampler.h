@@ -10,10 +10,12 @@
 
 class Sampler
 {
-    enum Method {RANDOM, SOBOL};
+
 public:
+    enum Method {RANDOM, SOBOL};
+
     Sampler() {}
-    Sampler(int spp, int dim, int height, int width) : m_spp(spp), m_dim(dim), m_height(height), m_width(width) { generate_samples(RANDOM); }
+    Sampler(int spp, int dim, int height, int width, Method method) : m_spp(spp), m_dim(dim), m_height(height), m_width(width) { generate_samples(method); }
 
     void generate_samples(Method method);
     void generate_samples_sobol();

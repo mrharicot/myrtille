@@ -10,7 +10,7 @@ class Renderer
 public:
     Renderer(int height, int width, int spp, int path_depth) : m_height(height), m_width(width), m_spp(spp), m_path_depth(path_depth)
     {
-        m_sampler = Sampler(m_spp, 2 + 5 * m_path_depth, m_height, m_width);
+        m_sampler = Sampler(m_spp, 2 + 5 * m_path_depth, m_height, m_width, Sampler::SOBOL);
         m_image.resize(m_height * m_width, float3(0.0f));
         m_verbose = true;
         m_scene_epsilon = 1e-3f;

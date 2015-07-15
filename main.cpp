@@ -57,9 +57,9 @@ int main()
     int height = width;
     int spp = 4;
     spp *= spp;
-    int path_depth = 5;
+    int path_depth = 4;
 
-    std::string filename = "cornell_bunny.obj";
+    std::string filename = "cornell_box.obj";
     Mesh mesh = read_obj(filename.c_str());
 
 
@@ -80,25 +80,23 @@ int main()
 
     Camera camera(origin, R, fov);
 
+    Timer timer;
 
     Renderer renderer(height, width, spp, path_depth);
     renderer.set_mesh(mesh);
     renderer.set_camera(camera);
 
-    Timer timer;
-
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
     renderer.render();
-
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
 
     write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
 
-    std::cout << "converting to png" << std::endl;
+    //std::cout << "converting to png" << std::endl;
 
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    //std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 
