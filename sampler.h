@@ -28,6 +28,7 @@ public:
     void generate_samples_sobol();
     void generate_samples_random();
 
+
     void generate_offsets();
 
     inline float randf()
@@ -38,16 +39,15 @@ public:
         return distribution(generator);
     }
 
-    inline float get(int n, int i, int j, int d)
+    inline float get_sample(int n, int i, int j, int d)
     {
-        //return wrap(m_samples[n * m_dim + d] + m_offsets[(m_width * i + j) * m_dim + d]);
-        return wrap(m_samples[n * m_dim + d] + randf());
-        //return randf();
+        return wrap(m_samples[n * m_dim + d] + m_offsets[(m_width * i + j) * m_dim + d]);
     }
 
 private:
     int m_spp, m_dim;
     int m_height, m_width;
+    std::vector<float> m_pixel_samples;
     std::vector<float> m_samples;
     std::vector<float> m_offsets;
 };

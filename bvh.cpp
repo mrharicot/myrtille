@@ -22,22 +22,6 @@ BVH::BVH(Mesh *mesh) : m_mesh(mesh)
     build_tree(0, 0, end_index);
     m_nodes.resize(nb_nodes);
 
-    //    std::vector<Triangle> new_faces;
-    //    std::vector<int>      new_indices;
-    //    std::vector<int3>     new_face_indices;
-    //    for (int i = 0; i < m_mesh->nb_faces(); ++i)
-    //    {
-    //        int ii = m_indices[i];
-    //        new_indices.push_back(i);
-    //        new_faces.push_back(m_mesh->face(ii));
-    //        new_face_indices.push_back(m_mesh->face_index(ii));
-    //    }
-    //    m_mesh->faces() = new_faces;
-    //    m_mesh->face_indices() = new_face_indices;
-    //    m_indices = new_indices;
-
-    //    for (auto &f : m_futures)
-    //        f.get();
 }
 
 Hit BVH::intersect(ray &r, float &t_max)
@@ -110,7 +94,7 @@ bool BVH::visibility(ray &r, float t_max)
 
         nodes_stack.pop_back();
 
-        if (c_pair.second >= t_max)
+        if (c_pair.second > t_max)
             continue;
 
         int    c_id = c_pair.first;
@@ -136,10 +120,10 @@ bool BVH::visibility(ray &r, float t_max)
             std::swap(first_hit, second_hit);
         }
 
-        if (second_hit.second < t_max)
+        if (second_hit.second <= t_max)
             nodes_stack.push_back(std::make_pair(second, second_hit.second));
 
-        if (first_hit.second < t_max)
+        if (first_hit.second <= t_max)
             nodes_stack.push_back(std::make_pair(first, first_hit.second));
     }
 
@@ -170,7 +154,7 @@ bool BVH::intersect_faces_ea(ray &r, float &t_max, int start_index, int end_inde
     {
         int i = m_indices[ii];
         auto trit = m_mesh->triangle(i).intersect(r);
-        if (trit.first && trit.second < t_max)
+        if (trit.first && trit.second <= t_max)
         {
             t_max = trit.second;
             return true;

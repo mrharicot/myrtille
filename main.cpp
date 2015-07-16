@@ -53,30 +53,31 @@ void write_ppm(std::vector<float3> &image, int height, int width, std::string fi
 
 int main()
 {
-    int width  = 512;
+    int width  = 1024;
     int height = width;
     int spp = 128;
     //spp *= spp;
-    int path_depth = 12;
+    int path_depth = 4;
 
-    std::string filename = "cornell_bunny.obj";
+    std::string filename = "sponza.obj";
     Mesh mesh = read_obj(filename.c_str());
 
 
-    float fov   = 39.3076f * pi / 180.0f;
+    //float fov   = 39.3076f * pi / 180.0f;
+    float fov   = 60.0f * pi / 180.0f;
 
     float3 origin(0.0f);
 
-    origin = float3(0.278f, 0.273f, -0.8f) * 1000.0f;
+    //origin = float3(0.278f, 0.273f, -0.8f) * 1000.0f;
     //origin = float3(0,0.1,0.1);
     //origin = float3(-8,1,14);
 
-    //origin = float3(20.0f, 91.0f, 0.0f);
+    origin = float3(0.0f, 91.0f, -50.0f);
 
     mat3f R(0.0f);
-    R(0,0) = -1.0f;
+    R(0,2) =  1.0f;
     R(1,1) =  1.0f;
-    R(2,2) = -1.0f;
+    R(2,0) = -1.0f;
 
     Camera camera(origin, R, fov);
 

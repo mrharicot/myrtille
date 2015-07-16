@@ -136,8 +136,6 @@ struct mat3f
 
 mat3f eye(void);
 
-float randf();
-
 float wrap(const float f);
 
 

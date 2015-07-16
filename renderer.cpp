@@ -7,7 +7,7 @@ void Renderer::render()
     int it_done = 0;
     int previous_percent = 0;
 
-    #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(static, 2)
+#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(static, 2)
     for (int i = 0; i < m_height; ++i)
     {
         for (int j = 0; j < m_width; ++j)
@@ -16,8 +16,8 @@ void Renderer::render()
 
             for (int si = 0; si < m_spp; ++si)
             {
-                float dx = m_sampler.get(si, i, j, 0);
-                float dy = m_sampler.get(si, i, j, 1);
+                float dx = m_sampler.get_sample(si, i, j, 0);
+                float dy = m_sampler.get_sample(si, i, j, 1);
 
                 float3 direction;
                 direction.x = (j + dx - 0.5f * m_width)  / focal;
@@ -35,7 +35,7 @@ void Renderer::render()
             }
 
             if (m_verbose)
-            #pragma omp critical
+#pragma omp critical
             {
                 it_done += 1;
 
@@ -61,7 +61,7 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 {
     float3 out_color(0.0f);
 
-    if (sp >= m_path_depth)
+    if (sp >= m_max_nb_bounces)
         return out_color;
 
     float t_max = 1e10f;
@@ -81,17 +81,17 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 
     float3 n = m_mesh->face_normal(hit.face_id, p);
 
-    float r1_light = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 0);
-    float r2_light = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 1);
-    float  r1_path = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 2);
-    float  r2_path = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 3);
+    float r1_light = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 0);
+    float r2_light = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 1);
+    float  r1_path = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 2);
+    float  r2_path = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 3);
 
     int f_id = (int) std::min((int) floor(m_mesh->nb_emissive_faces() * r1_light), m_mesh->nb_emissive_faces() - 1);
 
     int e_face_id = m_mesh->emissive_face_index(f_id);
-
     r1_light -= f_id / (float) m_mesh->nb_emissive_faces();
     r1_light *= m_mesh->nb_emissive_faces();
+
     float3 light_point = m_mesh->triangle(e_face_id).sample_point(r1_light, r2_light);
     float3 pa = p + n * m_scene_epsilon;
     float3 e_n = m_mesh->face_normal(e_face_id, light_point);
@@ -120,10 +120,7 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 
     out_color += light_contribution;
 
-    //float  russian_roulette = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 4);
-
-    //if (russian_roulette > 0.5f)
-        out_color += reflection_contribution;
+    out_color += reflection_contribution;
 
     return out_color;
 
