@@ -7,7 +7,7 @@ void Renderer::render()
     int it_done = 0;
     int previous_percent = 0;
 
-#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(dynamic, 2)
+    #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(static, 2)
     for (int i = 0; i < m_height; ++i)
     {
         for (int j = 0; j < m_width; ++j)
@@ -120,10 +120,10 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
 
     out_color += light_contribution;
 
-    float  russian_roulette = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 4);
+    //float  russian_roulette = m_sampler.get(sample_id, i, j, 2 + 5 * sp + 4);
 
-    if (russian_roulette > 0.5f)
-        out_color += reflection_contribution * 2.0f;
+    //if (russian_roulette > 0.5f)
+        out_color += reflection_contribution;
 
     return out_color;
 

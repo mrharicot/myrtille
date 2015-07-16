@@ -55,11 +55,11 @@ int main()
 {
     int width  = 512;
     int height = width;
-    int spp = 4;
-    spp *= spp;
-    int path_depth = 4;
+    int spp = 128;
+    //spp *= spp;
+    int path_depth = 12;
 
-    std::string filename = "cornell_box.obj";
+    std::string filename = "cornell_bunny.obj";
     Mesh mesh = read_obj(filename.c_str());
 
 
@@ -71,7 +71,7 @@ int main()
     //origin = float3(0,0.1,0.1);
     //origin = float3(-8,1,14);
 
-    //origin = float3(0.0f, 0.05f, 0.05f);
+    //origin = float3(20.0f, 91.0f, 0.0f);
 
     mat3f R(0.0f);
     R(0,0) = -1.0f;
@@ -83,7 +83,9 @@ int main()
     Timer timer;
 
     Renderer renderer(height, width, spp, path_depth);
+
     renderer.set_mesh(mesh);
+
     renderer.set_camera(camera);
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;

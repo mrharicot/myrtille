@@ -6,7 +6,7 @@
 struct Light
 {
     Light() : face_id(-1), emission(1.0f) {}
-    Light(int face_id, float3 color) : face_id(face_id), emission(emission) {}
+    Light(int face_id, float3 emission) : face_id(face_id), emission(emission) {}
 
     int    face_id;
     float3 emission;

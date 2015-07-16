@@ -86,8 +86,8 @@ Mesh read_ply(const char* file_path)
         if (tokens[0] == "end_header")
             break;
 
-        if (tokens[0] == "comment")
-            continue;
+//        if (tokens[0] == "comment")
+//            continue;
 
         if (tokens[0] == "element")
         {
@@ -184,25 +184,35 @@ Mesh read_obj(const char* file_path)
     std::string line;
     std::vector<std::string> tokens;
 
+    std::vector<std::string> lines;
+
     std::vector<Material> materials;
 
     int current_material = -1;
 
     while (std::getline(file, line))
     {
+        lines.push_back(line);
+    }
+
+    for (auto line : lines)
+    {
         tokens = split_whitespaces(line);
         if (tokens.size() == 0)
             continue;
 
-        if (tokens[0] == "#")
-            std::cout << "comment" << std::endl;
+//        if (tokens[0] == "#")
+//            std::cout << "comment" << std::endl;
 
         if (tokens[0] == "mtllib")
+        {
             materials = read_mtl(tokens[1].c_str());
+            continue;
+        }
 
         if (tokens[0] == "usemtl")
         {
-            for (int i = 0; i < materials.size(); ++i)
+            for (size_t i = 0; i < materials.size(); ++i)
             {
                 if (tokens[1] == materials[i].name)
                 {
@@ -210,24 +220,28 @@ Mesh read_obj(const char* file_path)
                     break;
                 }
             }
+            continue;
         }
 
         if (tokens[0] == "v")
         {
             float3 v(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
             vertices.push_back(v);
+            continue;
         }
 
         if (tokens[0] == "vt")
         {
             float2 uv(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()));
             texture_coordinates.push_back(uv);
+            continue;
         }
 
         if (tokens[0] == "vn")
         {
             float3 n(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
             normals.push_back(n);
+            continue;
         }
 
         if (tokens[0] == "f")
