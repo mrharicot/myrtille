@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+//#define G_EPS 1e-3
+
 void Renderer::render()
 {
 
@@ -68,17 +70,12 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
     Hit hit = m_bvh.intersect(r, t_max);
 
     if (!hit)
-    {
         return out_color;
-    }
 
     if (sp == 0)
-    {
         out_color += m_mesh->face_material(hit.face_id).emission;
-    }
 
     float3 p = r.origin + r.direction * hit.t;
-
     float3 n = m_mesh->face_normal(hit.face_id, p);
 
     float r1_light = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 0);
@@ -86,41 +83,37 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
     float  r1_path = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 2);
     float  r2_path = m_sampler.get_sample(sample_id, i, j, 2 + 4 * sp + 3);
 
-    int f_id = (int) std::min((int) floor(m_mesh->nb_emissive_faces() * r1_light), m_mesh->nb_emissive_faces() - 1);
-
-    int e_face_id = m_mesh->emissive_face_index(f_id);
-    r1_light -= f_id / (float) m_mesh->nb_emissive_faces();
-    r1_light *= m_mesh->nb_emissive_faces();
+    int e_face_id = m_mesh->emissive_face_index(m_mesh->sample_emissive_face_id(r1_light));
 
     float3 light_point = m_mesh->triangle(e_face_id).sample_point(r1_light, r2_light);
     float3 pa = p + n * m_scene_epsilon;
     float3 e_n = m_mesh->face_normal(e_face_id, light_point);
     float3 pb = light_point + e_n * m_scene_epsilon;
-    float3 light_color = m_mesh->face_material(e_face_id).emission;
 
-    float3 light_dir   = pb - pa;
-    float light_t_max = light_dir.norm();
-    light_dir /= light_t_max;
-    ray sr(pa, light_dir);
 
-    bool       viz = !m_bvh.visibility(sr, light_t_max);
-    float light_dp = std::max(light_dir.dot(n), 0.0f);
+    float3 light_direction = pb - pa;
+    float light_t_max      = light_direction.norm();
+    light_direction       /= light_t_max;
+    ray sr(pa, light_direction);
 
     float3 face_color = m_mesh->face_material(hit.face_id).color;
 
-    float3 reflection_direction = sample_around_normal(n, r1_path, r2_path);
-    float  reflection_dp = reflection_direction.dot(n);
-    float  light_pdf     = 1.0f / ( m_mesh->nb_emissive_faces() * m_mesh->area(e_face_id));
-    float  G             = m_mesh->face_normal(e_face_id, pb).dot(light_dir * -1.0f) * light_dp / (light_t_max * light_t_max);
+    bool viz = !m_bvh.visibility(sr, light_t_max);
+    if (viz)
+    {
+        float3 light_color        = m_mesh->face_material(e_face_id).emission;
+        float  light_dp           = std::max(light_direction.dot(n), 0.0f);
+        float  light_pdf          = 1.0f / ( m_mesh->nb_emissive_faces() * m_mesh->area(e_face_id));
+        float  G                  = m_mesh->face_normal(e_face_id, pb).dot(light_direction * -1.0f) * light_dp / (light_t_max * light_t_max);
+        float3 light_contribution = face_color * light_dp * light_color * G / light_pdf;
+        out_color += min(light_contribution, max_sample_value);
+    }
 
-    float3 light_contribution = float3(viz) * face_color * light_dp * light_color * G / light_pdf;
-    float3 reflection_pdf = reflection_dp / pi;
-
+    float3 reflection_direction    = sample_around_normal(n, r1_path, r2_path);
+    float  reflection_dp           = std::max(reflection_direction.dot(n), 0.0f);
+    float3 reflection_pdf          = reflection_dp / pi;
     float3 reflection_contribution = sample_ray(ray(pa, reflection_direction), sp + 1, sample_id, i, j) * face_color;
-
-    out_color += light_contribution;
-
-    out_color += reflection_contribution;
+    out_color += min(reflection_contribution, max_sample_value);
 
     return out_color;
 

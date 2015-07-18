@@ -1,6 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <cfloat>
+
 #include "bvh.h"
 #include "camera.h"
 #include "sampler.h"
@@ -8,7 +10,8 @@
 class Renderer
 {
 public:
-    Renderer(int height, int width, int spp, int max_nb_bounces) : m_height(height), m_width(width), m_spp(spp), m_max_nb_bounces(max_nb_bounces)
+    Renderer(int height, int width, int spp, int max_nb_bounces, float3 max_sample_value = float3(FLT_MAX))
+        : m_height(height), m_width(width), m_spp(spp), m_max_nb_bounces(max_nb_bounces), max_sample_value(max_sample_value)
     {
         m_sampler = Sampler(m_spp, 2 + 4 * m_max_nb_bounces, m_height, m_width, Sampler::SOBOL);
         m_image.resize(m_height * m_width, float3(0.0f));
@@ -36,6 +39,7 @@ private:
 
     bool    m_verbose;
     float   m_scene_epsilon;
+    float3  max_sample_value;
 };
 
 #endif // RENDERER_H

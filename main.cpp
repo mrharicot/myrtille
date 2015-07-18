@@ -55,29 +55,29 @@ int main()
 {
     int width  = 1024;
     int height = width;
-    int spp = 128;
+    int spp = 4096;
     //spp *= spp;
-    int path_depth = 4;
+    int path_depth = 5;
 
-    std::string filename = "sponza.obj";
+    std::string filename = "cornell_box.obj";
     Mesh mesh = read_obj(filename.c_str());
 
 
-    //float fov   = 39.3076f * pi / 180.0f;
-    float fov   = 60.0f * pi / 180.0f;
+    float fov   = 39.3076f * pi / 180.0f;
+    //float fov   = 60.0f * pi / 180.0f;
 
     float3 origin(0.0f);
 
-    //origin = float3(0.278f, 0.273f, -0.8f) * 1000.0f;
+    origin = float3(0.278f, 0.273f, -0.8f) * 1000.0f;
     //origin = float3(0,0.1,0.1);
     //origin = float3(-8,1,14);
 
-    origin = float3(0.0f, 91.0f, -50.0f);
+    //origin = float3(0.0f, 91.0f, -50.0f);
 
     mat3f R(0.0f);
-    R(0,2) =  1.0f;
+    R(0,0) = -1.0f;
     R(1,1) =  1.0f;
-    R(2,0) = -1.0f;
+    R(2,2) = -1.0f;
 
     Camera camera(origin, R, fov);
 
@@ -97,9 +97,9 @@ int main()
 
     write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
 
-    //std::cout << "converting to png" << std::endl;
+    std::cout << "converting to png" << std::endl;
 
-    //std::system("/usr/local/bin/convert out.ppm out.png");
+    std::system("/usr/local/bin/convert out.ppm out.png");
 
     return 0;
 

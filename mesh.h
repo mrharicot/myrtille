@@ -31,10 +31,6 @@ public:
 
     }
 
-    //void set_vertices(std::vector<float> vertices)  {m_vertices = vertices;}
-    //void set_normals(std::vector<float> normals)  {m_normals = normals;}
-    //void set_face_indices(std::vector<int> face_indices) {m_face_indices = face_indices;}
-
     inline const Triangle&              triangle(int i) const { return m_triangles[i]; }
     inline       Triangle&              triangle(int i)       { return m_triangles[i]; }
     inline       std::vector<Triangle>& triangles()       { return m_triangles;    }
@@ -45,15 +41,15 @@ public:
     inline int nb_faces(void)    const  { return m_faces.size();  }
     inline int nb_emissive_faces(void)    const  { return m_e_faces_indices.size();  }
 
-    inline Face&     face(int i)          { return m_faces[i];      }
-    inline Face& emissive_face(int i)     { return m_faces[m_e_faces_indices[i]]; }
+    inline Face&     face(int i)            { return m_faces[i];      }
+    inline Face& emissive_face(int i)       { return m_faces[m_e_faces_indices[i]]; }
     inline int   emissive_face_index(int i) { return m_e_faces_indices[i]; }
-    inline float3&   normal(int i)        { return m_normals[i];    }
-    inline float3&   vertex(int i)        { return m_vertices[i];   }
-    inline float3&   centroid(int i)      { return m_centroids[i];  }
-    inline float     area(int i)          { return m_areas[i];      }
-    inline Material& material(int i)      { return m_materials[i];  }
-    inline Material& face_material(int i) { return m_materials[m_faces[i].m_id]; }
+    inline float3&   normal(int i)          { return m_normals[i];    }
+    inline float3&   vertex(int i)          { return m_vertices[i];   }
+    inline float3&   centroid(int i)        { return m_centroids[i];  }
+    inline float     area(int i)            { return m_areas[i];      }
+    inline Material& material(int i)        { return m_materials[i];  }
+    inline Material& face_material(int i)   { return m_materials[m_faces[i].m_id]; }
 
     Hit intersect(const ray &r, float t_min = 0.0f, float t_max = 1e20f);
 
@@ -71,6 +67,22 @@ public:
             return m_triangles[i].normal();
         }
     }
+
+    inline int sample_emissive_face_id(float &r)
+    {
+        int nb_ef = nb_emissive_faces();
+        int f_id = (int) std::min((int) floor(nb_ef * r), nb_ef - 1);
+
+        r *= nb_ef;
+        r -= f_id;
+
+        return f_id;
+    }
+
+//    inline sample_emissive_face(float &r1, float &r2)
+//    {
+
+//    }
 
 private:
     std::vector<float3>    m_vertices;
