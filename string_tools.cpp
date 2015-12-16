@@ -13,7 +13,7 @@ std::vector<std::string> split(const std::string &s, const char delim) {
     return tokens;
 }
 
-std::vector<std::string> split_whitespaces(std::string str)
+std::vector<std::string> split_whitespaces(const std::string &str)
 {
     std::stringstream ss(str);
     std::string       buf;
@@ -24,4 +24,11 @@ std::vector<std::string> split_whitespaces(std::string str)
         tokens.push_back(buf);
 
     return tokens;
+}
+
+
+std::string strip_filename(const std::string &full_path)
+{
+    size_t position = full_path.find_last_of("/\\");
+    return full_path.substr(0, position);
 }

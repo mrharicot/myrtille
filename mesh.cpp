@@ -181,6 +181,9 @@ Mesh read_obj(const char* file_path)
 
     std::ifstream file(file_path, std::ifstream::in);
 
+    std::string file_path_str(file_path);
+    std::string raw_path = strip_filename(file_path_str);
+
     std::string line;
     std::vector<std::string> tokens;
 
@@ -206,7 +209,8 @@ Mesh read_obj(const char* file_path)
 
         if (tokens[0] == "mtllib")
         {
-            materials = read_mtl(tokens[1].c_str());
+          std::string mtl_path = raw_path + "/" + tokens[1];
+            materials = read_mtl(mtl_path.c_str());
             continue;
         }
 

@@ -17,51 +17,24 @@
 #include "bvh.h"
 #include "sampler.h"
 #include "renderer.h"
+#include "file_tools.h"
 
-typedef unsigned char uchar;
-
-struct color {uchar r; uchar g; uchar b;};
-
-
-void write_ppm(std::vector<float3> &image, int height, int width, std::string file_path)
+int main(int argc, char** argv)
 {
-
-    std::ofstream file(file_path.c_str(), std::ofstream::out | std::ofstream::binary);
-
-    file << "P6 " << std::to_string(width) << " "   << std::to_string(height) << " 255\n";
-
-    for (int i = 0; i < height; ++i)
+    if (argc != 4)
     {
-        for (int j = 0; j < width; ++j)
-        {
-            float3 c = image.at(width * i + j);
-            color out_c;
-            out_c.r = (uchar) std::round(std::min(c.x, 1.0f) * 255);
-            out_c.g = (uchar) std::round(std::min(c.y, 1.0f) * 255);
-            out_c.b = (uchar) std::round(std::min(c.z, 1.0f) * 255);
-            file.write((const char*) &out_c.r, sizeof(color));
-            //std::cout << out_c.r << out_c.g << out_c.b << std::endl;
-        }
-        //file << "\n";
+      std::cerr << "Usage: " << argv[0] << " [filename] [image width] [spp]"<< std::endl;
+      return 1;
     }
 
-
-    file.close();
-
-    std::cout << "Wrote a " << width << " by " << height << " image." << std::endl;
-}
-
-int main()
-{
-    int width  = 1024;
-    int height = width;
-    int spp = 4096;
-    //spp *= spp;
-    int path_depth = 5;
-
-    std::string filename = "cornell_box.obj";
+    std::string filename = std::string(argv[1]);
     Mesh mesh = read_obj(filename.c_str());
 
+    int width  = std::atoi(argv[2]);
+    int height = width;
+    int spp = std::atoi(argv[3]);
+    //spp *= spp;
+    int path_depth = 5;
 
     float fov   = 39.3076f * pi / 180.0f;
     //float fov   = 60.0f * pi / 180.0f;
@@ -95,11 +68,8 @@ int main()
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
 
-    write_ppm(renderer.get_image(), height, width, std::string("out.ppm"));
-
-    std::cout << "converting to png" << std::endl;
-
-    std::system("/usr/local/bin/convert out.ppm out.png");
+    std::string out_file("out.ppm");
+    write_ppm(renderer.get_image(), height, width, out_file);
 
     return 0;
 

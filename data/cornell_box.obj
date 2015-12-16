@@ -3,8 +3,6 @@
   # comment
 
 # empty line including some space
-   
-
 mtllib cornell_box.mtl
 
 o floor
@@ -14,7 +12,7 @@ v 0.0   0.0   0.0
 v 0.0   0.0 559.2
 v 549.6 0.0 559.2
 
-f -4 -3 -2 -1 
+f -4 -3 -2 -1
 
 o light
 usemtl light
@@ -22,7 +20,7 @@ v 343.0 548.0 227.0
 v 343.0 548.0 332.0
 v 213.0 548.0 332.0
 v 213.0 548.0 227.0
-#f -4 -3 -2 -1
+f -4 -3 -2 -1
 
 o ceiling
 usemtl white
@@ -65,7 +63,7 @@ v    556.0 548.8   0.0
 f -4 -3 -2 -1
 
 o short_block
-usemtl light2
+usemtl white
 
 v    130.0 165.0  65.0
 v     82.0 165.0 225.0
@@ -130,4 +128,3 @@ v    265.0 330.0 296.0
 v    423.0 330.0 247.0
 v    423.0   0.0 247.0
 f -4 -3 -2 -1
-
