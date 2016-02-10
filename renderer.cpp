@@ -51,7 +51,7 @@ void Renderer::render()
 
             color /= m_spp;
 
-            m_image.at(i * m_width + j) = color ^ (1.0f / 2.2f);
+            m_image[i * m_width + j] = color ^ (1.0f / 2.2f);
 
         }
 
@@ -103,15 +103,15 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
     {
         float3 light_color        = m_mesh->face_material(e_face_id).emission_color;
         float  light_dp           = std::max(light_direction.dot(n), 0.0f);
-        float  light_pdf          = 1.0f / ( m_mesh->nb_emissive_faces() * m_mesh->area(e_face_id));
+        float  light_pdf          = 1.0f / (m_mesh->nb_emissive_faces() * m_mesh->area(e_face_id));
         float  G                  = m_mesh->face_normal(e_face_id, pb).dot(light_direction * -1.0f) * light_dp / (light_t_max * light_t_max);
         float3 light_contribution = face_color * light_dp * light_color * G / light_pdf;
         out_color += min(light_contribution, max_sample_value);
     }
 
     float3 reflection_direction    = sample_around_normal(n, r1_path, r2_path);
-    float  reflection_dp           = std::max(reflection_direction.dot(n), 0.0f);
-    float3 reflection_pdf          = reflection_dp / pi;
+    //float  reflection_dp           = std::max(reflection_direction.dot(n), 0.0f);
+    //float3 reflection_pdf          = reflection_dp / pi;
     float3 reflection_contribution = sample_ray(ray(pa, reflection_direction), sp + 1, sample_id, i, j) * face_color;
     out_color += min(reflection_contribution, max_sample_value);
 

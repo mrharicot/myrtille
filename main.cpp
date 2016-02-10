@@ -1,28 +1,21 @@
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <cmath>
 #include <random>
-#include <limits>
-#include <cstdlib>
 
-#include "string_tools.h"
 #include "math_tools.h"
 #include "mesh.h"
-#include "geometry.h"
 #include "camera.h"
 #include "time_tools.h"
 #include "bvh.h"
-#include "sampler.h"
 #include "renderer.h"
 #include "file_tools.h"
 
 int main(int argc, char** argv)
 {
-    if (argc != 4)
-    {
+    if (argc != 4) {
       std::cerr << "Usage: " << argv[0] << " [filename] [image width] [spp]"<< std::endl;
       return 1;
     }
@@ -72,6 +65,4 @@ int main(int argc, char** argv)
     write_ppm(renderer.get_image(), height, width, out_file);
 
     return 0;
-
-
 }

@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(myrtille)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp -pthread")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(CMAKE_CXX_COMPILER "/usr/local/bin/g++-5")
+    set(CMAKE_C_COMPILER   "/usr/local/bin/gcc-5")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+
+
+set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS}         -std=c++11 -fopenmp -pthread")
 set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG}     -Wall -g3 -O0 -fopenmp -pthread")
 set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -Wall -O2 -DNDEBUG -fopenmp -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -Wall -std=c++11 -g3 -O0 -fopenmp -pthread")

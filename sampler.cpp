@@ -1,22 +1,14 @@
 #include "sampler.h"
 
-#include <cstdlib>
-#include <cmath>
-
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 
 void Sampler::generate_samples(Method method)
 {
     if (method == RANDOM)
-    {
         generate_samples_random();
-    }
     else if (method == SOBOL)
-    {
         generate_samples_sobol();
-    }
 
     generate_offsets();
 }
@@ -27,24 +19,20 @@ void Sampler::generate_samples_random()
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0, 1);
+    std::uniform_real_distribution<float> dis(0, 1);
     for (int i = 0; i < nb_total_samples; ++i)
-    {
         m_samples.push_back(dis(gen));
-    }
 }
 
 void Sampler::generate_offsets()
 {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0, 1);
+    std::uniform_real_distribution<float> dis(0, 1);
 
     int nb_offsets = m_width * m_height * m_dim;
     for (int i = 0; i < nb_offsets; ++i)
-    {
         m_offsets.push_back(dis(gen));
-    }
 }
 
 
@@ -55,7 +43,7 @@ void Sampler::generate_samples_sobol()
 
     int N = m_spp;
     int D = m_dim - 2;
-    ifstream infile("/home/clement/EngD/code/myrtille/data/new-joe-kuo-6.21201", ios::in);
+    ifstream infile("data/new-joe-kuo-6.21201", ios::in);
     if (!infile) {
         cout << "Input file containing direction numbers cannot be found!\n";
         exit(1);
@@ -144,24 +132,11 @@ void Sampler::generate_samples_sobol()
     }
     delete [] C;
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0, 1);
-
     int nb_total_samples = m_spp * m_dim;
     m_samples.resize(nb_total_samples);
     for (int i = 0; i < m_spp; ++i)
         for (int j = 0; j < m_dim; ++j)
-        {
-            if (j < 2)
-            {
-                m_samples[i * m_dim + j] = randf();
-            }
-            else
-            {
-                m_samples[i * m_dim + j] = (float) POINTS[i][j - 2];
-            }
-        }
+                m_samples[i * m_dim + j] =  j < 2 ? randf() : (float) POINTS[i][j - 2];
 
     delete [] POINTS;
 }

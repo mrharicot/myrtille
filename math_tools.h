@@ -5,8 +5,7 @@
 #include <cstdlib>
 #include <cmath>
 
-#define pi          3.14159265359
-#define rand_factor 1.0 / RAND_MAX
+#define pi          3.14159265359f
 
 struct int3
 {
@@ -72,9 +71,6 @@ struct float3
 
 inline float3 max(float3 lhs, float3 rhs) { return float3(std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z)); }
 inline float3 min(float3 lhs, float3 rhs) { return float3(std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y), std::min(lhs.z, rhs.z)); }
-
-template<typename T>
-inline void swap(T& a, T& b) { T t = a; a = b; b = t; }
 
 struct mat3f
 {
