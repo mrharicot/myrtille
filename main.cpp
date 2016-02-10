@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     int height = width;
     int spp = std::atoi(argv[3]);
     //spp *= spp;
-    int path_depth = 5;
+    int path_depth = 15;
 
     float fov   = 39.3076f * pi / 180.0f;
     //float fov   = 60.0f * pi / 180.0f;

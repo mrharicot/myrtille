@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(rt)
+project(myrtille)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp -pthread")
 set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG}     -Wall -g3 -O0 -fopenmp -pthread")
@@ -28,4 +28,4 @@ link_libraries(rt_libs)
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
-add_executable(rt main.cpp)
+add_executable(myrtille main.cpp)

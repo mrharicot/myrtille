@@ -55,7 +55,7 @@ void Sampler::generate_samples_sobol()
 
     int N = m_spp;
     int D = m_dim - 2;
-    ifstream infile("../../data/new-joe-kuo-6.21201", ios::in);
+    ifstream infile("/home/clement/EngD/code/myrtille/data/new-joe-kuo-6.21201", ios::in);
     if (!infile) {
         cout << "Input file containing direction numbers cannot be found!\n";
         exit(1);

@@ -12,18 +12,37 @@ struct Light
     float3 emission;
 };
 
+//inspired by both Disney's and Epic's physically based materials
 class Material
 {
 public:
-    Material() : name("default"), color(1.0f), emission(0.0f), is_emissive(false) {}
-    Material(std::string name, float3 color, float3 emission = 0.0f) : name(name), color(color), emission(emission)
+    Material()
+        : name("default"),
+          base_color(1.0f),
+          metallic(0.0f),
+          roughness(1.0f),
+          emission_color(0.0f),
+          is_emissive(false) {}
+
+    Material(std::string name,
+             float3 base_color,
+             float  metallic,
+             float  roughness,
+             float3 emission_color = 0.0f)
+        : name(name),
+          base_color(base_color),
+          metallic(metallic),
+          roughness(roughness),
+          emission_color(emission_color)
     {
-        is_emissive = emission.norm() > 0.0f;
+        is_emissive = emission_color.norm() > 0.0f;
     }
 
     std::string name;
-    float3 color;
-    float3 emission;
+    float3 base_color;
+    float  metallic;
+    float  roughness;
+    float3 emission_color;
     bool is_emissive;
 
     friend std::ostream& operator<<(std::ostream& os, const Material &m);

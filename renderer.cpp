@@ -9,7 +9,7 @@ void Renderer::render()
     int it_done = 0;
     int previous_percent = 0;
 
-#pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(static, 2)
+    #pragma omp parallel for shared(it_done, previous_percent) num_threads(12) schedule(static, 2)
     for (int i = 0; i < m_height; ++i)
     {
         for (int j = 0; j < m_width; ++j)
@@ -37,7 +37,7 @@ void Renderer::render()
             }
 
             if (m_verbose)
-#pragma omp critical
+            #pragma omp critical
             {
                 it_done += 1;
 
@@ -73,7 +73,7 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
         return out_color;
 
     if (sp == 0)
-        out_color += m_mesh->face_material(hit.face_id).emission;
+        out_color += m_mesh->face_material(hit.face_id).emission_color;
 
     float3 p = r.origin + r.direction * hit.t;
     float3 n = m_mesh->face_normal(hit.face_id, p);
@@ -96,12 +96,12 @@ float3 Renderer::sample_ray(ray r, int sp, int sample_id, int i, int j)
     light_direction       /= light_t_max;
     ray sr(pa, light_direction);
 
-    float3 face_color = m_mesh->face_material(hit.face_id).color;
+    float3 face_color = m_mesh->face_material(hit.face_id).base_color;
 
     bool viz = !m_bvh.visibility(sr, light_t_max);
     if (viz)
     {
-        float3 light_color        = m_mesh->face_material(e_face_id).emission;
+        float3 light_color        = m_mesh->face_material(e_face_id).emission_color;
         float  light_dp           = std::max(light_direction.dot(n), 0.0f);
         float  light_pdf          = 1.0f / ( m_mesh->nb_emissive_faces() * m_mesh->area(e_face_id));
         float  G                  = m_mesh->face_normal(e_face_id, pb).dot(light_direction * -1.0f) * light_dp / (light_t_max * light_t_max);
