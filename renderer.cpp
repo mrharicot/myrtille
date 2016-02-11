@@ -78,10 +78,11 @@ float3 Renderer::sample_ray(ray r, int current_depth, int sample_id, int i, int 
     float3 p = r.origin + r.direction * hit.t;
     float3 n = m_mesh->face_normal(hit.face_id, p);
 
-    float r1_light = m_sampler.get_sample(sample_id, i, j, 2 + 4 * current_depth + 0);
-    float r2_light = m_sampler.get_sample(sample_id, i, j, 2 + 4 * current_depth + 1);
-    float  r1_path = m_sampler.get_sample(sample_id, i, j, 2 + 4 * current_depth + 2);
-    float  r2_path = m_sampler.get_sample(sample_id, i, j, 2 + 4 * current_depth + 3);
+    float r1_light = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 0);
+    float r2_light = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 1);
+    float  r1_path = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 2);
+    float  r2_path = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 3);
+    float  r_metal = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 4);
 
     int e_face_id = m_mesh->emissive_face_index(m_mesh->sample_emissive_face_id(r1_light));
 
@@ -108,7 +109,7 @@ float3 Renderer::sample_ray(ray r, int current_depth, int sample_id, int i, int 
         out_color += min(light_contribution, max_sample_value);
     }
 
-    float3 reflection_direction    = sample_around_normal(n, r1_path, r2_path);
+    float3 reflection_direction    = sample_diffuse_ray(n, r1_path, r2_path);
     //float  reflection_dp           = std::max(reflection_direction.dot(n), 0.0f);
     //float3 reflection_pdf          = reflection_dp / pi;
     float3 reflection_contribution = sample_ray(ray(pa, reflection_direction), current_depth + 1, sample_id, i, j) * face_color;

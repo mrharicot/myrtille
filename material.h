@@ -20,7 +20,7 @@ public:
         : name("default"),
           base_color(1.0f),
           metallic(0.0f),
-          roughness(1.0f),
+          roughness(0.2f),
           emission_color(0.0f),
           is_emissive(false) {}
 

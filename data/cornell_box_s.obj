@@ -3,7 +3,7 @@
   # comment
 
 # empty line including some space
-mtllib cornell_box.mtl
+mtllib cornell_box_s.mtl
 
 o floor
 usemtl white
@@ -63,7 +63,7 @@ v    556.0 548.8   0.0
 f -4 -3 -2 -1
 
 o short_block
-usemtl white
+usemtl mirror
 
 v    130.0 165.0  65.0
 v     82.0 165.0 225.0

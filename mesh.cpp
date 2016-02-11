@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 #include <fstream>
 #include <sstream>
 #include <cmath>
@@ -404,10 +403,10 @@ std::vector<Material> read_mtl(const char* file_path)
             }
         }
 
-        if (tokens[0] == "roughness")
+        if (tokens[0] == "r")
             current_material.roughness = std::atof(tokens[1].c_str());
 
-        if (tokens[0] == "metallic")
+        if (tokens[0] == "m")
             current_material.metallic = std::atof(tokens[1].c_str());
 
     }

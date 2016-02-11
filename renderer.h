@@ -13,7 +13,7 @@ public:
     Renderer(int height, int width, int spp, int max_nb_bounces, float3 max_sample_value = float3(FLT_MAX))
         : m_height(height), m_width(width), m_spp(spp), m_max_nb_bounces(max_nb_bounces), max_sample_value(max_sample_value)
     {
-        m_sampler = Sampler(m_spp, 2 + 4 * m_max_nb_bounces, m_height, m_width, Sampler::SOBOL);
+        m_sampler = Sampler(m_spp, 2 + 5 * m_max_nb_bounces, m_height, m_width, Sampler::SOBOL);
         m_image.resize(m_height * m_width, float3(0.0f));
         m_verbose = true;
         m_scene_epsilon = 1e-3f;

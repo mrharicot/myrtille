@@ -23,3 +23,8 @@ newmtl light2
 Kd 0.78 0.78 0.78
 Ks 0 0 0
 Ke 1 1 1
+
+newmtl mirror
+Kd 1.0 1.0 1.0
+r 0.0
+m 1.0

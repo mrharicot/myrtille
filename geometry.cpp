@@ -91,7 +91,7 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
     return std::make_pair(true, t_start);
 }
 
-float3 sample_around_normal(float3 &n, float r1, float r2)
+float3 sample_diffuse_ray(float3 &n, float r1, float r2)
 {
     bool zup = std::abs(n.z) < 0.9f;
 
@@ -117,6 +117,33 @@ float3 sample_around_normal(float3 &n, float r1, float r2)
                    std::cos(2.0f * pi * r1) * sq,
                    std::sin(2.0f * pi * r1) * sq);
     }
+
+    return v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
+}
+
+float3 sample_specular_ray(float3 &n, float r1, float r2, float alpha)
+{
+    bool zup = std::abs(n.z) < 0.9f;
+
+    float3 upvec = zup ? float3(0.0f, 0.0f, 1.0f) : float3(1.0f, 0.0f, 0.0f);
+
+    float3 k = upvec.cross(n);
+    float ct = upvec.dot(n);
+    float st = k.norm();
+    k /= st;
+
+    float theta = std::atan(alpha * std::sqrt(r1) / std::sqrt(1.0f - r1));
+    float phi   = 2.0f * pi * r2;
+
+    float3 v;
+    if (zup)
+        v = float3(std::sin(theta) * std::cos(phi),
+                   std::sin(theta) * std::sin(phi),
+                   std::cos(theta));
+    else
+        v = float3(std::cos(theta),
+                   std::sin(theta) * std::cos(phi),
+                   std::sin(theta) * std::sin(phi));
 
     return v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
 }

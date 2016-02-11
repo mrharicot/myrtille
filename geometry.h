@@ -116,6 +116,7 @@ struct Hit
     inline operator bool() const { return did_hit; }
 };
 
-float3 sample_around_normal(float3 &n, float r1, float r2);
+float3  sample_diffuse_ray(float3 &n, float r1, float r2);
+float3 sample_specular_ray(float3 &n, float r1, float r2, float alpha);
 
 #endif
