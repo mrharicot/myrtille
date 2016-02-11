@@ -42,15 +42,12 @@ struct float3
     inline float3 operator/(float s) const { return float3(x / s, y / s, z / s); }
     inline float3 operator^(float s) const { return float3(std::pow(x, s), std::pow(y, s), std::pow(z, s)); }
 
-    inline float3 operator+(const float3& f) const { return float3(x + f.x, y + f.y, z + f.z); }
-    inline float3 operator-(const float3& f) const { return float3(x - f.x, y - f.y, z - f.z); }
-    inline float3 operator*(const float3& f) const { return float3(x * f.x, y * f.y, z * f.z); }
-    inline float3 operator/(const float3& f) const { return float3(x / f.x, y / f.y, z / f.z); }
-
     inline float3& operator+=(const float3& f) { x += f.x; y += f.y; z += f.z; return *this; }
     inline float3& operator-=(const float3& f) { x -= f.x; y -= f.y; z -= f.z; return *this; }
     inline float3& operator*=(const float3& f) { x *= f.x; y *= f.y; z *= f.z; return *this; }
     inline float3& operator/=(const float3& f) { x /= f.x; y /= f.y; z /= f.z; return *this; }
+
+    inline const float3 operator-() { return float3(*this) *= -1.0f; }
 
     inline float3& operator+=(const float f) { x += f; y += f; z += f; return *this; }
     inline float3& operator-=(const float f) { x -= f; y -= f; z -= f; return *this; }
@@ -71,6 +68,11 @@ struct float3
 
 inline float3 max(float3 lhs, float3 rhs) { return float3(std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z)); }
 inline float3 min(float3 lhs, float3 rhs) { return float3(std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y), std::min(lhs.z, rhs.z)); }
+
+inline const float3 operator+(const float3& lhs, const float3& rhs) { float3 temp(lhs); return temp += rhs; }
+inline const float3 operator-(const float3& lhs, const float3& rhs) { float3 temp(lhs); return temp -= rhs; }
+inline const float3 operator*(const float3& lhs, const float3& rhs) { float3 temp(lhs); return temp *= rhs; }
+inline const float3 operator/(const float3& lhs, const float3& rhs) { float3 temp(lhs); return temp /= rhs; }
 
 struct mat3f
 {

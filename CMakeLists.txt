@@ -10,9 +10,9 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS}         -std=c++11 -fopenmp -pthread")
 set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG}     -Wall -g3 -O0 -fopenmp -pthread")
-set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -Wall -O2 -DNDEBUG -fopenmp -pthread")
+set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}   -Wall -O3 -DNDEBUG -fopenmp -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -Wall -std=c++11 -g3 -O0 -fopenmp -pthread")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -std=c++11 -O2 -DNDEBUG -fopenmp -pthread")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -std=c++11 -O3 -DNDEBUG -fopenmp -pthread")
 
 SET(RT_SRCS
   renderer.cpp
