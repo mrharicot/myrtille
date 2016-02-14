@@ -3,9 +3,9 @@
 
 #include <cfloat>
 
-#include "bvh.h"
-#include "camera.h"
+#include "scene.h"
 #include "sampler.h"
+#include "bsdf.h"
 
 class Renderer
 {
@@ -19,11 +19,8 @@ public:
         m_scene_epsilon = 1e-3f;
     }
 
-    inline void set_camera(Camera &camera) { m_camera = &camera; }
-    inline void set_mesh(Mesh &mesh)       { m_mesh = &mesh; m_bvh = BVH(m_mesh); }
-
-    void render();
-    float3 sample_ray(ray r, int current_depth, int sample_id, int i, int j);
+    void render(Scene &scene);
+    float3 sample_ray(const ray& r, int current_depth, int sample_id, int i, int j);
     std::vector<float3> &get_image() { return m_image; }
 
 private:
@@ -32,14 +29,12 @@ private:
 
     std::vector<float3> m_image;
 
-    BVH     m_bvh;
-    Mesh   *m_mesh;
-    Camera *m_camera;
-    Sampler m_sampler;
+    Sampler  m_sampler;
+    Scene   *m_scene;
 
-    bool    m_verbose;
-    float   m_scene_epsilon;
-    float3  max_sample_value;
+    bool     m_verbose;
+    float    m_scene_epsilon;
+    float3   max_sample_value;
 };
 
 #endif // RENDERER_H

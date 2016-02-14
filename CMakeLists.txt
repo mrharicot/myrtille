@@ -26,7 +26,8 @@ SET(RT_SRCS
   mesh.cpp
   camera.cpp
   file_tools.cpp
-)
+  bsdf.cpp
+  scene.cpp)
 
 add_library(rt_libs STATIC
   ${RT_SRCS}

@@ -24,7 +24,7 @@ BVH::BVH(Mesh *mesh) : m_mesh(mesh)
 
 }
 
-Hit BVH::intersect(ray &r, float &t_max)
+Hit BVH::intersect(const ray &r, float &t_max)
 {
     Hit best_hit = Hit(false, 1e32f, -1);
 
@@ -78,7 +78,7 @@ Hit BVH::intersect(ray &r, float &t_max)
     return best_hit;
 }
 
-bool BVH::visibility(ray &r, float t_max)
+bool BVH::visibility(const ray &r, float t_max)
 {
     auto root_hit = m_nodes[0].aabb.intersect(r);
     if (!root_hit.first)
@@ -130,7 +130,7 @@ bool BVH::visibility(ray &r, float t_max)
     return false;
 }
 
-Hit BVH::intersect_faces(ray &r, float &t_max, int start_index, int end_index)
+Hit BVH::intersect_faces(const ray &r, float &t_max, int start_index, int end_index)
 {
     Hit hit(false, 1e32f, -1);
     for (int ii = start_index; ii < end_index; ++ii)
@@ -148,7 +148,7 @@ Hit BVH::intersect_faces(ray &r, float &t_max, int start_index, int end_index)
     return hit;
 }
 
-bool BVH::intersect_faces_ea(ray &r, float &t_max, int start_index, int end_index)
+bool BVH::intersect_faces_ea(const ray &r, float &t_max, int start_index, int end_index)
 {
     for (int ii = start_index; ii < end_index; ++ii)
     {

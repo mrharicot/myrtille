@@ -116,6 +116,32 @@ struct Hit
     inline operator bool() const { return did_hit; }
 };
 
+struct Frame {
+    //from "Building an Orthonormal Basis from a 3D Unit Vector Without Normalization"
+    Frame(const float3& n) : up(n) {
+            if(n.z < -0.9999999f) {
+                b1 = float3( 0.0f, -1.0f, 0.0f);
+                b2 = float3(-1.0f,  0.0f, 0.0f);
+                return;
+            }
+            const float a = 1.0f / (1.0f + n.z);
+            const float b = -n.x * n.y * a;
+            b1 = float3(1.0f - n.x * n.x * a, b, -n.x);
+            b2 = float3(b, 1.0f - n.y * n.y * a, -n.y);
+    }
+
+    float3 to_world(const float3& v) {
+        float3 out(0.0f);
+        for (int i = 0; i < 3; ++i)
+            out.data[i] = v.data[0] * b1.data[i] + v.data[1] * b2.data[i] + v.data[2] * up.data[i];
+        return out;
+    }
+
+    float3 up;
+    float3 b1;
+    float3 b2;
+};
+
 float3  sample_diffuse_ray(float3 &n, float r1, float r2);
 float3 sample_specular_ray(float3 &n, float r1, float r2, float alpha);
 

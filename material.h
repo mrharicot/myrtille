@@ -18,31 +18,31 @@ class Material
 public:
     Material()
         : name("default"),
-          base_color(1.0f),
+          albedo(1.0f),
           metallic(0.0f),
-          roughness(0.2f),
-          emission_color(0.0f),
+          roughness(0.05f),
+          emission(0.0f),
           is_emissive(false) {}
 
     Material(std::string name,
-             float3 base_color,
+             float3 albedo,
              float  metallic,
              float  roughness,
-             float3 emission_color = 0.0f)
+             float3 emission = 0.0f)
         : name(name),
-          base_color(base_color),
+          albedo(albedo),
           metallic(metallic),
           roughness(roughness),
-          emission_color(emission_color)
+          emission(emission)
     {
-        is_emissive = emission_color.norm() > 0.0f;
+        is_emissive = emission.norm() > 0.0f;
     }
 
     std::string name;
-    float3 base_color;
+    float3 albedo;
     float  metallic;
     float  roughness;
-    float3 emission_color;
+    float3 emission;
     bool is_emissive;
 
     friend std::ostream& operator<<(std::ostream& os, const Material &m);

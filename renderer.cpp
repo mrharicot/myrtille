@@ -2,10 +2,12 @@
 
 //#define G_EPS 1e-3
 
-void Renderer::render()
+void Renderer::render(Scene &scene)
 {
 
-    float focal = m_height * m_camera->focal();
+    m_scene = &scene;
+
+    float focal = m_height * m_scene->camera()->focal();
     int it_done = 0;
     int previous_percent = 0;
 
@@ -27,9 +29,9 @@ void Renderer::render()
                 direction.z = -1.0f;
                 direction.normalize();
 
-                direction = m_camera->orientation().dot(direction);
+                direction = m_scene->camera()->orientation().dot(direction);
 
-                ray r(m_camera->position(), direction);
+                ray r(m_scene->camera()->position(), direction);
 
                 float3 path_color = sample_ray(r, 0, si, i, j);
 
@@ -59,7 +61,7 @@ void Renderer::render()
 
 }
 
-float3 Renderer::sample_ray(ray r, int current_depth, int sample_id, int i, int j)
+float3 Renderer::sample_ray(const ray& r, int current_depth, int sample_id, int i, int j)
 {
     float3 out_color(0.0f);
 
@@ -67,16 +69,16 @@ float3 Renderer::sample_ray(ray r, int current_depth, int sample_id, int i, int 
         return out_color;
 
     float t_max = 1e10f;
-    Hit hit = m_bvh.intersect(r, t_max);
+    Hit hit = m_scene->bvh()->intersect(r, t_max);
 
     if (!hit)
         return out_color;
 
     if (current_depth == 0)
-        out_color += m_mesh->face_material(hit.face_id).emission_color;
+        out_color += m_scene->mesh()->face_material(hit.face_id).emission;
 
     float3 p = r.origin + r.direction * hit.t;
-    float3 n = m_mesh->face_normal(hit.face_id, p);
+    float3 n = m_scene->mesh()->face_normal(hit.face_id, p);
 
     float r1_light = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 0);
     float r2_light = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 1);
@@ -84,32 +86,36 @@ float3 Renderer::sample_ray(ray r, int current_depth, int sample_id, int i, int 
     float  r2_path = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 3);
     float  r_metal = m_sampler.get_sample(sample_id, i, j, 2 + 5 * current_depth + 4);
 
-    int e_face_id = m_mesh->emissive_face_index(m_mesh->sample_emissive_face_id(r1_light));
+    int e_face_id = m_scene->mesh()->emissive_face_index(m_scene->mesh()->sample_emissive_face_id(r1_light));
 
-    float3 light_point = m_mesh->triangle(e_face_id).sample_point(r1_light, r2_light);
+    float3 light_point = m_scene->mesh()->triangle(e_face_id).sample_point(r1_light, r2_light);
     float3 pa = p + n * m_scene_epsilon;
-    float3 e_n = m_mesh->face_normal(e_face_id, light_point);
+    float3 e_n = m_scene->mesh()->face_normal(e_face_id, light_point);
     float3 pb = light_point + e_n * m_scene_epsilon;
-
 
     float3 light_direction = pb - pa;
     float light_t_max      = light_direction.norm();
     light_direction       /= light_t_max;
     ray sr(pa, light_direction);
 
-    float3 face_color = m_mesh->face_material(hit.face_id).base_color;
+    float3 face_color = m_scene->mesh()->face_material(hit.face_id).albedo;
 
-    bool viz = !m_bvh.visibility(sr, light_t_max);
+    BSDF bsdf(r, n, &m_scene->mesh()->face_material(hit.face_id));
+
+    bool viz = !m_scene->bvh()->visibility(sr, light_t_max);
     if (viz) {
-        float3 light_color        = m_mesh->face_material(e_face_id).emission_color;
+        float3 light_color        = m_scene->mesh()->face_material(e_face_id).emission;
         float  light_dp           = std::max(light_direction.dot(n), 0.0f);
-        float  light_pdf          = 1.0f / (m_mesh->nb_emissive_faces() * m_mesh->area(e_face_id));
-        float  G                  = m_mesh->face_normal(e_face_id, pb).dot(-light_direction) * light_dp / (light_t_max * light_t_max);
+        float  light_pdf          = 1.0f / (m_scene->mesh()->nb_emissive_faces() * m_scene->mesh()->area(e_face_id));
+        float  G                  = m_scene->mesh()->face_normal(e_face_id, pb).dot(-light_direction) * light_dp / (light_t_max * light_t_max);
         float3 light_contribution = face_color * light_dp * light_color * G / light_pdf;
         out_color += min(light_contribution, max_sample_value);
     }
 
-    float3 reflection_direction    = sample_diffuse_ray(n, r1_path, r2_path);
+    float alpha = m_scene->mesh()->face_material(hit.face_id).roughness;
+    alpha *= alpha;
+    //float3 m = sample_diffuse_ray(n, r1_path, r2_path);
+    float3 reflection_direction    = bsdf.sample(r1_path, r2_path, r_metal);//reflect(r.direction, m);
     //float  reflection_dp           = std::max(reflection_direction.dot(n), 0.0f);
     //float3 reflection_pdf          = reflection_dp / pi;
     float3 reflection_contribution = sample_ray(ray(pa, reflection_direction), current_depth + 1, sample_id, i, j) * face_color;

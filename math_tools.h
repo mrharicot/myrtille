@@ -47,7 +47,7 @@ struct float3
     inline float3& operator*=(const float3& f) { x *= f.x; y *= f.y; z *= f.z; return *this; }
     inline float3& operator/=(const float3& f) { x /= f.x; y /= f.y; z /= f.z; return *this; }
 
-    inline const float3 operator-() { return float3(*this) *= -1.0f; }
+    inline const float3  operator-() const { return float3(*this) *= -1.0f; }
 
     inline float3& operator+=(const float f) { x += f; y += f; z += f; return *this; }
     inline float3& operator-=(const float f) { x -= f; y -= f; z -= f; return *this; }
@@ -113,7 +113,7 @@ struct mat3f
         return out;
     }
 
-    inline float3 dot(float3& f) {
+    inline float3 dot(const float3& f) {
         float3 out(0.0f);
         for (int i = 0; i < 3; ++i)
             for (int j = 0; j < 3; ++j)
@@ -135,6 +135,8 @@ struct mat3f
 mat3f eye(void);
 
 float wrap(const float f);
+
+const float3 reflect(const float3& i, const float3& n);
 
 
 #endif

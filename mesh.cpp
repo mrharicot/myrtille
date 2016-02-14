@@ -389,15 +389,15 @@ std::vector<Material> read_mtl(const char* file_path)
         }
 
         if (tokens[0] == "i")
-            current_material.emission_color = std::atof(tokens[1].c_str());
+            current_material.emission = std::atof(tokens[1].c_str());
 
         if (tokens[0] == "Kd")
-            current_material.base_color = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+            current_material.albedo = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
 
         if (tokens[0] == "Ke")
         {
-            current_material.emission_color = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
-            if (current_material.emission_color.norm() > 0.0f)
+            current_material.emission = float3(std::atof(tokens[1].c_str()), std::atof(tokens[2].c_str()), std::atof(tokens[3].c_str()));
+            if (current_material.emission.norm() > 0.0f)
             {
                 current_material.is_emissive = true;
             }

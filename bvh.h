@@ -44,8 +44,8 @@ public:
     BVH() {}
     BVH(Mesh *mesh);
 
-    Hit  intersect(ray &r, float &t_max);
-    bool visibility(ray &r, float t_max);
+    Hit  intersect(const ray &r, float &t_max);
+    bool visibility(const ray &r, float t_max);
 
     inline Node&              node(int i)   { return m_nodes[i]; }
     inline std::vector<Node>& nodes(void)   { return m_nodes;    }
@@ -65,8 +65,8 @@ private:
     std::pair<int, int>   choose_split(int start_index, int end_index);
     std::pair<float, int> sah_cost(int start_index, int end_index, int axis);
     void sort(int start_index, int end_index, int axis);
-    Hit     intersect_faces(ray &r, float &t_max, int start_index, int end_index);
-    bool intersect_faces_ea(ray &r, float &t_max, int start_index, int end_index);
+    Hit     intersect_faces(const ray &r, float &t_max, int start_index, int end_index);
+    bool intersect_faces_ea(const ray &r, float &t_max, int start_index, int end_index);
 };
 
 #endif // BVH_H

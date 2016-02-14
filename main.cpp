@@ -49,15 +49,17 @@ int main(int argc, char** argv)
 
     Timer timer;
 
+    Scene scene;
+    scene.set_camera(camera);
+    scene.set_mesh(mesh);
+
     Renderer renderer(height, width, spp, path_depth);
 
-    renderer.set_mesh(mesh);
 
-    renderer.set_camera(camera);
 
     std::cout << "done in " << timer.elapsed(1) * 1e-6 << "s." << std::endl;
 
-    renderer.render();
+    renderer.render(scene);
 
     std::cout << timer.elapsed() / 1e6f << "s elapsed." << std::endl;
 

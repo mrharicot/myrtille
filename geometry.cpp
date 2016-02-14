@@ -75,10 +75,8 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
               (maxi.z - r.origin.z) * r.inv_d.z);
 
     for (int i = 0; i < 3; ++i)
-    {
         if (t1.data[i] > t2.data[i])
             std::swap(t1.data[i], t2.data[i]);
-    }
 
     float t_end   = std::min(std::min(t2.x, t2.y), t2.z);
     if (t_end < t_min)
@@ -91,6 +89,7 @@ std::pair <bool, float> AABB::intersect(const ray &r, float t_min)
     return std::make_pair(true, t_start);
 }
 
+/*
 float3 sample_diffuse_ray(float3 &n, float r1, float r2)
 {
     bool zup = std::abs(n.z) < 0.9f;
@@ -121,6 +120,21 @@ float3 sample_diffuse_ray(float3 &n, float r1, float r2)
     return v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
 }
 
+
+float3 sample_diffuse_ray(float3 &n, float r1, float r2)
+{
+    float sq = std::sqrt(1.0f - r2);
+
+    float3 v = float3(std::cos(2.0f * pi * r1) * sq,
+                      std::sin(2.0f * pi * r1) * sq,
+                      std::sqrt(r2));
+
+    Frame frame(n);
+
+    return frame.to_world(v);
+}
+
+
 float3 sample_specular_ray(float3 &n, float r1, float r2, float alpha)
 {
     bool zup = std::abs(n.z) < 0.9f;
@@ -148,3 +162,4 @@ float3 sample_specular_ray(float3 &n, float r1, float r2, float alpha)
     return v * ct + k.cross(v) * st + k * k.dot(v) * (1.0f - ct);
 }
 
+ */

@@ -1,13 +1,11 @@
 #include "math_tools.h"
 
-std::ostream& operator<<(std::ostream& os, const int3 &i)
-{
+std::ostream& operator<<(std::ostream& os, const int3 &i) {
     os << i.x << ", " << i.y << ", " << i.z;
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const float3 &f)
-{
+std::ostream& operator<<(std::ostream& os, const float3 &f) {
   os << f.x << ", " << f.y << ", " << f.z;
   return os;
 }
@@ -20,7 +18,10 @@ mat3f eye(void) {
   return out;
 }
 
-float wrap(const float f)
-{
+float wrap(const float f) {
     return f > 1.0f ? f - 1.0f : f;
+}
+
+const float3 reflect(const float3 &i, const float3 &n) {
+    return 2.0f * i.dot(n) * n - i;
 }
